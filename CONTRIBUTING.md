@@ -2,7 +2,7 @@
 
 ### Welcome to jxvc!
 
->First off, thank you for considering contributing to jxvc. It's people like you that will help make jxvc such a great tool.
+>First off, thank you for considering contributing to jxvc. It's people like you that will help make jxvc such a great tool. At the moment, this project is in its very early stages.  As you can see below the documentation is still largely boilerplate.
 
 **Need more inspiration?** [1] [Read The Docs](http://read-the-docs.readthedocs.org/en/latest/contribute.html) [2] [Mustache.js](https://github.com/janl/mustache.js/#contributing)
 
