@@ -1,0 +1,9 @@
+# RELAX NG XML syntax specified in compact syntax.
+
+default namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace local = ""
+datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
+
+start = broken
+
+broken = felement {}

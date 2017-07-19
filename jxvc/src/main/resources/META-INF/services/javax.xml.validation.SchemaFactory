@@ -1,0 +1,3 @@
+com.componentcorp.xml.validator.external.CompactSyntaxRelaxNGSchemaFactory
+com.componentcorp.xml.validator.external.XMLSyntaxRelaxNGSchemaFactory
+com.componentcorp.xml.validator.IntrinsicSchemaFactory

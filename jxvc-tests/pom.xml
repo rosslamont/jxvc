@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.componentcorp.xml.validation</groupId>
+        <artifactId>jxvc-master</artifactId>
+        <version>0.2.1-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <groupId>com.componentcorp.xml.validation</groupId>
+    <artifactId>jxvc-tests</artifactId>
+    <packaging>jar</packaging>
+    <name>Java XML Validation Collection Tests</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.thaiopensource</groupId>
+            <artifactId>jing</artifactId>
+            <version>20091111</version>
+        </dependency>
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>relaxng</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>relaxng-compact</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+    </dependencies>
+    <description>Tests of the validators.  Mostly these have been cut out so that the dependencies can be tied in via late binding.</description>
+</project>
