@@ -21,7 +21,7 @@
     <url>https://github.com/rosslamont/jxvc</url>
     <scm>
       <connection>scm:git:git://github.com/rosslamont/jxvc.git</connection>
-      <developerConnection>scm:git:ssh://github.com:rosslamont/jxvc.git</developerConnection>
+      <developerConnection>scm:git:https://github.com/rosslamont/jxvc.git</developerConnection>
       <url>https://github.com/rosslamont/jxvc/tree/master</url>
     </scm>
     <licenses>
