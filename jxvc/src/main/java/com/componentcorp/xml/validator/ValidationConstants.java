@@ -42,7 +42,7 @@ public interface ValidationConstants {
     
     
     /**
-     * Property identifying a {@link java.util.Set<String>} of validators to disable. Validators are identified by their unique namespace URI as setout in {@link javax.xml.validation.SchemaFactory}.
+     * Property identifying a {@link java.util.Set} of validators to disable. Validators are identified by their unique namespace URI as setout in {@link javax.xml.validation.SchemaFactory}.
      * Any such identified validator will not partake in the validation process.  For the purposes of {@link #FEATURE_IGNORE_MISSING_VALIDATION_LIB} the validator will be considered \
      * as available but silently accepting the document as valid.
      */
@@ -56,7 +56,7 @@ public interface ValidationConstants {
     
     
     /**
-     * Property on {@link InrinsicValidator}  which enables namespace support in the underlying SAX processor.  Defaults to 'true'.
+     * Property on {@link IntrinsicValidator}  which enables namespace support in the underlying SAX processor.  Defaults to 'true'.
      */
     public static final String FEATURE_NAMESPACE_AWARE="http://xml.org/sax/features/namespaces";
     

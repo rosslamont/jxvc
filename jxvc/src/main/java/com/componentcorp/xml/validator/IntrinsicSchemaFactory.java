@@ -89,9 +89,7 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
     
     /**
      * Creating a schema from known sources does not make sense for this schema.
-     * @param schemas
-     * @return
-     * @throws SAXException 
+     * @throws UnsupportedOperationException always 
      */
     @Override
     public Schema newSchema(Source[] schemas) throws SAXException {
