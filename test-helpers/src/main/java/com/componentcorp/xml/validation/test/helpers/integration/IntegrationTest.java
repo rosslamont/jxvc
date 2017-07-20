@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator.other;
+package com.componentcorp.xml.validation.test.helpers.integration;
 
 /**
  *

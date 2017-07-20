@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://componentcorp/schema/jxvc/test/simpletest.rnc" schematypens="http://www.iana.org/assignments/media-types/application/relax-ng-compact-syntax" ?>
+<simple >
+    <supposedly-empty/>
+</simple>
+
+  
+

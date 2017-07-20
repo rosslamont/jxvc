@@ -47,13 +47,19 @@ import org.xml.sax.ext.EntityResolver2;
  *
  * @author rlamont
  */
-class IntrinsicValidator extends Validator{
+class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
     
     
     private SAXParseException firstFatalError=null;
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
-    private boolean namespaceAware = true;
+    private final FeaturePropertyProviderInternal featuresAndProperties;
+
+    IntrinsicValidator(FeaturePropertyProviderInternal featuresAndProperties) {
+        this.featuresAndProperties=featuresAndProperties;
+        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE);
+        try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
+    }
 
     @Override
     public void reset() {
@@ -91,8 +97,8 @@ class IntrinsicValidator extends Validator{
                 throw new UnsupportedOperationException("IntrinsicValidator does not currently support "+source.getClass().getName()+ " source.");
             }
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-            parserFactory.setNamespaceAware(namespaceAware);
-            IntrinsicSchema schema = new IntrinsicSchema();
+            parserFactory.setNamespaceAware(featuresAndProperties.getFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE));
+            IntrinsicSchema schema = new IntrinsicSchema(featuresAndProperties);
             
             parserFactory.setSchema(schema);
             //ValidatorHandler intrinsicValidator = schema.newValidatorHandler();
@@ -138,21 +144,25 @@ class IntrinsicValidator extends Validator{
 
     @Override
     public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.FEATURE_NAMESPACE_AWARE.equals(name)){
-            namespaceAware=value;
-        }
-        else{
-            super.setFeature(name, value); 
-        }
+        featuresAndProperties.setFeature(name, value);
     }
 
     @Override
     public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.FEATURE_NAMESPACE_AWARE.equals(name)){
-            return namespaceAware;
-        }
-        return super.getFeature(name); 
+        return featuresAndProperties.getFeature(name);
     }
+
+    @Override
+    public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+        return featuresAndProperties.getProperty(name);
+    }
+
+    @Override
+    public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+        featuresAndProperties.setProperty(name, object);
+    }
+    
+    
     
     
     

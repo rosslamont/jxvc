@@ -15,25 +15,12 @@
  */
 package com.componentcorp.xml.validator;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.util.Collection;
-import java.util.Iterator;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -41,7 +28,14 @@ import org.xml.sax.SAXParseException;
  *
  * @author rlamont
  */
-public class XMLSchemaValidationTest {
+public class XMLSchemaValidationTest extends BaseXMLValidationTest{
+    
+    public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd";
+    public static final String SIMPLE_ROOT_LOCATION="/schema/simpleRootSchema.xsd";
+    private static final Map<String,String> RESOURCE_LOCATIONS=new HashMap<String, String>();
+    static{
+        RESOURCE_LOCATIONS.put(SIMPLE_ROOT_SYSTEM_ID, SIMPLE_ROOT_LOCATION);
+    }
     
     public XMLSchemaValidationTest() {
     }
@@ -132,95 +126,14 @@ public class XMLSchemaValidationTest {
         assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
         assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
     }
+
+    @Override
+    protected Map<String, String> getResourceMap() {
+        return RESOURCE_LOCATIONS;
+    }
     
 
 
 
 
-    private Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile){
-        TestContentHandler contentHandler = new TestContentHandler();
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(ValidationConstants.INTRINSIC_NS_URI);
-        if (schemaFactory ==null){
-            fail("Should have found the intrinsic factory");
-        }
-        try{
-            Schema schema =schemaFactory.newSchema();
-            //ValidatorHandler handler =schema.newValidatorHandler();
-            
-            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-            parserFactory.setNamespaceAware(true);
-            parserFactory.setSchema(schema);
-            SAXParser parser = parserFactory.newSAXParser();
-            
-            InputStream is = getClass().getResourceAsStream(testFile);
-            parser.parse(is, contentHandler);
-        }
-        catch(SAXException ex){
-            fail("Should not have thrown an SAXException creating schema");
-        }
-        catch(ParserConfigurationException pce){
-            fail("Should not have thrown an ParserConfigurationException creating schema");
-        }
-        catch(IOException io){
-            fail("Should not have thrown an IOException creating schema");
-        }
-        return contentHandler.getFaults();
-    }
-
-    private Collection<SAXParseException>  performSAXValidatorTest(String testFile) throws SAXException {
-        final TestContentHandler contentHandler = new TestContentHandler();
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(ValidationConstants.INTRINSIC_NS_URI);
-        if (schemaFactory ==null){
-            fail("Should have found the intrinsic factory");
-        }
-        try{
-            
-            Schema schema =schemaFactory.newSchema();
-            
-            //ValidatorHandler handler =schema.newValidatorHandler();
-            Validator validator=schema.newValidator();
-            validator.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true); //just test the feature is working even though its default
-            validator.setErrorHandler(contentHandler);
-            validator.setResourceResolver(contentHandler);
-            InputStream is = getClass().getResourceAsStream(testFile);
-            Source source = new StreamSource(is);
-            Result result = new StreamResult();
-            validator.validate(source, result);
-        }
-        catch(SAXException ex){
-            fail("Should not have thrown an SAXException creating schema");
-        }
-        catch(IOException io){
-            fail("Should not have thrown an IOException creating schema");
-        }
-        return contentHandler.getFaults();
-    }
-
-    private Collection<SAXParseException> performDOMValidatorTest(String testFile) {
-        final TestContentHandler contentHandler = new TestContentHandler();
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(ValidationConstants.INTRINSIC_NS_URI);
-        if (schemaFactory ==null){
-            fail("Should have found the intrinsic factory");
-        }
-        try{
-            Schema schema =schemaFactory.newSchema();
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            docFactory.setNamespaceAware(true);
-            docFactory.setSchema(schema);
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            InputStream is = getClass().getResourceAsStream(testFile);
-            docBuilder.setEntityResolver(contentHandler);
-            docBuilder.setErrorHandler(contentHandler);
-            docBuilder.parse(is);
-        }
-        catch(SAXException ex){
-            fail("Should not have thrown an SAXException creating schema");
-        }
-        catch(IOException io){
-            fail("Should not have thrown an IOException creating schema");
-        } catch (ParserConfigurationException ex) {
-            fail("Should not have thrown an ParserConfigurationException creating schema");
-        }
-        return contentHandler.getFaults();
-    }
 }

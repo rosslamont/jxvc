@@ -11,11 +11,6 @@
     <artifactId>jxvc-tests</artifactId>
     <packaging>jar</packaging>
     <name>Java XML Validation Collection Tests</name>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -27,16 +22,31 @@
             <groupId>com.thaiopensource</groupId>
             <artifactId>jing</artifactId>
             <version>20091111</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.componentcorp.xml.validation</groupId>
             <artifactId>relaxng</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.componentcorp.xml.validation</groupId>
             <artifactId>relaxng-compact</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>jxvc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>test-helpers</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         
     </dependencies>

@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation.test.helpers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.ls.LSInput;
@@ -35,9 +36,16 @@ import org.xml.sax.ext.EntityResolver2;
  * @author rlamont
  */
 public class TestContentHandler extends DefaultHandler2 implements LSResourceResolver{
-    public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd";
 
     private final Collection<SAXParseException> faults=new ArrayList<SAXParseException>();
+    private final Map<String,String> entityResolverMap;
+
+    public TestContentHandler(Map<String,String> entityResolverMap) {
+        this.entityResolverMap = entityResolverMap;
+    }
+    
+    
+    
     @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -46,10 +54,9 @@ public class TestContentHandler extends DefaultHandler2 implements LSResourceRes
     @Override
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         InputStream input =null;
-        if (systemId!=null){
-            if (systemId.equals(SIMPLE_ROOT_SYSTEM_ID)){
-                input=this.getClass().getResourceAsStream("/schema/simpleRootSchema.xsd");
-            }
+        String resource=entityResolverMap.get(systemId);
+        if (resource!=null){
+            input=this.getClass().getResourceAsStream(resource);
         }
         InputSource source = new InputSource(input);
         source.setPublicId(publicId);

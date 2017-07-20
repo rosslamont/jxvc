@@ -16,12 +16,15 @@
 
 package com.componentcorp.xml.validator;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * A SchemaFactory which creates a Proxy Schema which is able to determine
@@ -32,10 +35,25 @@ import org.xml.sax.SAXException;
  * instruction in accordance with ISO/IEC 19757-11.
  * @author rlamont
  */
-public class IntrinsicSchemaFactory extends SchemaFactory {
+public class IntrinsicSchemaFactory extends SchemaFactory implements FeaturePropertyProvider {
 
     private ErrorHandler errorHandler=null;
     private LSResourceResolver resourceResolver=null;
+    private final FeaturePropertyProviderInternal featuresAndProperties;
+
+    public IntrinsicSchemaFactory() {
+        FeaturePropertyProviderImpl fAndP=new FeaturePropertyProviderImpl();
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB);
+        try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB,false);} catch (SAXException ignore){}
+        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR);
+        try{fAndP.setProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR, XMLConstants.W3C_XML_SCHEMA_NS_URI);}catch(SAXException ignore){}
+        //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATION_DISABLED);
+        //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS);
+        featuresAndProperties=fAndP;
+    }
+    
+    
+    
     /**
      * This schema factory supports the xml-model pseudo language. The
      * URI for this language can be found at {@link ValidationConstants#INTRINSIC_NS_URI}
@@ -82,7 +100,29 @@ public class IntrinsicSchemaFactory extends SchemaFactory {
 
     @Override
     public Schema newSchema() throws SAXException {
-        return new IntrinsicSchema();
+        return new IntrinsicSchema(new FeaturePropertyProviderImpl(featuresAndProperties));
     }
+
+    @Override
+    public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+        return featuresAndProperties.getProperty(name);
+    }
+
+    @Override
+    public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+        featuresAndProperties.setProperty(name, object);
+    }
+
+    @Override
+    public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+        featuresAndProperties.setFeature(name, value);
+    }
+
+    @Override
+    public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+        return featuresAndProperties.getFeature(name);
+    }
+    
+    
     
 }

@@ -20,7 +20,7 @@ import javax.xml.XMLConstants;
 import javax.xml.validation.SchemaFactory;
 import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
-import com.componentcorp.xml.validator.other.IntegrationTest;
+import com.componentcorp.xml.validation.test.helpers.integration.IntegrationTest;
 
 /**
  *

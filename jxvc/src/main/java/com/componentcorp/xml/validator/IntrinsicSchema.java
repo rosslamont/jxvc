@@ -25,18 +25,20 @@ import javax.xml.validation.ValidatorHandler;
  * @author rlamont
  */
 public class IntrinsicSchema extends Schema{
+    private final FeaturePropertyProviderInternal featuresAndProperties;
     
-    
-    
+    IntrinsicSchema(FeaturePropertyProviderInternal featuresAndProperties){
+        this.featuresAndProperties=featuresAndProperties;
+    }
 
     @Override
     public Validator newValidator() {
-        return new IntrinsicValidator();
+        return new IntrinsicValidator(new FeaturePropertyProviderImpl(featuresAndProperties));
     }
 
     @Override
     public ValidatorHandler newValidatorHandler() {
-        return new IntrinsicValidatorHandler();
+        return new IntrinsicValidatorHandler(new FeaturePropertyProviderImpl(featuresAndProperties));
     }
     
 }

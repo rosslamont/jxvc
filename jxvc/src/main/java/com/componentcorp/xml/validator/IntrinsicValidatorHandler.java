@@ -55,12 +55,11 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author rlamont
  */
-class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,DeclHandler,LexicalHandler{
+class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,DeclHandler,LexicalHandler,  FeaturePropertyProvider{
     
     private Sax2DefaultHandlerWrapper contentHandler=new Sax2DefaultHandlerWrapper(null, null);
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
-    private boolean ignoreMissingValidationLib=false;
     private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
     private final Map<String,ValidatorHandlerProxy> discoveredValidatorsForFeaturesMap=new HashMap<String, ValidatorHandlerProxy>();
     private final Map<String,Sax2DefaultHandlerWrapper> validatorCache=new WeakHashMap<String, Sax2DefaultHandlerWrapper>();
@@ -69,11 +68,16 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     private final Collection<DeferredAction> deferredActions=new ArrayList();
     private Locator locator;
     //private final Set<String> foundNamespaces=new HashSet<String>();    //Used to manage Section 4.3.2.4 of https://www.w3.org/TR/xmlschema-1
-    private String defaultValidatorUri=XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    private final FeaturePropertyProviderInternal featuresAndProperties;
     
     
     
     private static final String  XML_MODEL="xml-model";
+    
+    
+    IntrinsicValidatorHandler(FeaturePropertyProviderInternal factory){
+        featuresAndProperties=factory;
+    }
 
     @Override
     public void setContentHandler(ContentHandler receiver) {
@@ -408,22 +412,12 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
      */
     @Override
     public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB.equals(name)){
-            ignoreMissingValidationLib=value;
-        }
-        else {
-            super.setFeature(name, value); 
-        }
+        featuresAndProperties.setFeature(name, value);
     }
 
     @Override
     public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB.equals(name)){
-            return ignoreMissingValidationLib;
-        }
-        else {
-            return super.getFeature(name); 
-        }
+        return featuresAndProperties.getFeature(name);
     }
     
     
@@ -439,28 +433,12 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     
     @Override
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.PROPERTY_CONFLICT_RESOLUTION.equals(name)){
-            this.propertyConflictResolutionMethod=(ValidationConstants.ConflictResolution) object;
-        }
-        else if (ValidationConstants.PROPERTY_DEFAULT_VALIDATOR.equals(name)){
-            this.defaultValidatorUri=object.toString();
-        }
-        else{
-            super.setProperty(name, object);
-        }
+        featuresAndProperties.setProperty(name, object);
     }
 
     @Override
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (ValidationConstants.PROPERTY_CONFLICT_RESOLUTION.equals(name)){
-            return this.propertyConflictResolutionMethod;
-        }
-        else if (ValidationConstants.PROPERTY_DEFAULT_VALIDATOR.equals(name)){
-            return this.defaultValidatorUri;
-        }
-        else{
-            return super.getProperty(name); 
-        }
+        return featuresAndProperties.getProperty(name);
     }
     
     
@@ -603,6 +581,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     private void handleRootElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
         firstElementPassed=true;
         SAXException lateThrow=null;
+        String defaultValidatorUri=(String) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR);
         if (this.currentOrderedValidators.isEmpty() && defaultValidatorUri!=null){
             Sax2DefaultHandlerWrapper wrapper = validatorCache.get(defaultValidatorUri);
             if (wrapper==null){

@@ -28,3 +28,4 @@ hs_err_pid*
 /jxvc/nbproject/
 /relaxng/target/
 /relaxng-compact/target/
+/test-helpers/target/
