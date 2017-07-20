@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.componentcorp.xml.validation</groupId>
     <artifactId>jxvc-master</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,7 +23,7 @@
       <connection>scm:git:git://github.com/rosslamont/jxvc.git</connection>
       <developerConnection>scm:git:https://github.com/rosslamont/jxvc.git</developerConnection>
       <url>https://github.com/rosslamont/jxvc/tree/master</url>
-      <tag>jxvc-master-0.2.1</tag>
+      <tag>HEAD</tag>
   </scm>
     <licenses>
         <license>
