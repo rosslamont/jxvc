@@ -11,7 +11,8 @@
         <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
     <name>Java XML Validation Collection</name>
-    <description>A collection of javax.xml.validation.SchemaFactory.
+    <description>Unified collection of xml Validators, including an uber validator which detects most types of 
+        validation.
 
         Especially note IntrinsicSchemaFactory which can be used to auto detect other SchemaFactories whilst validating a document.
         IntrinsicSchemaFactory supports xml-model schema association, as well as supporting traditional DTD and XSI annotated XML Schema processing.
