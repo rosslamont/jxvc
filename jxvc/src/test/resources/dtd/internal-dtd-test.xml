@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2017 Component Corporation Pty Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+<!DOCTYPE sgml [
+  <!ELEMENT sgml (img)*>
+   <!--
+     the optional "type" attribute value can only be set to this notation.
+   -->
+  <!ATTLIST sgml
+    type  NOTATION (
+      type-vendor-specific ) #IMPLIED>
+
+  <!ELEMENT img ANY> <!-- optional content can be only parsable SGML or XML data -->
+   <!--
+     The optional "title" attribute value must be parsable as text.
+     The optional "data" attribute value is set to an unparsed external entity.
+     The optional "type" attribute value can only be one of the two notations.
+   -->
+  <!ATTLIST img
+    title CDATA              #IMPLIED
+    data  ENTITY             #IMPLIED
+    type  NOTATION (
+      type-image-svg |
+      type-image-gif )       #IMPLIED>
+
+  <!--
+    Notations are referencing external entities and may be set in the "type" attributes above,
+    or must be referenced by any defined external entities that cannot be parsed.
+  -->
+  <!NOTATION type-image-svg       PUBLIC "-//W3C//DTD SVG 1.1//EN"
+     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+  <!NOTATION type-image-gif       PUBLIC "image/gif">
+  <!NOTATION type-vendor-specific PUBLIC "application/VND.specific+sgml">
+
+  <!ENTITY example1SVGTitle "Title of example1.svg"> <!-- parsed internal entity -->
+  <!ENTITY example1SVG      SYSTEM "src/test/resources/dtd/example1.svg"> <!-- parsed external entity -->
+  <!ENTITY example1GIFTitle "Title of example1.gif"> <!-- parsed internal entity -->
+  <!ENTITY example1GIF      SYSTEM "example1.gif" NDATA type-image-gif> <!-- unparsed external entity -->
+]>
+
+<sgml type="type-vendor-specific">
+  <!-- an SVG image is parsable as valid SGML or XML text -->
+  <img title="&example1SVGTitle;" type="type-image-svg">&example1SVG;</img>
+
+  <!-- it can also be referenced as an unparsed external entity -->
+  <img title="&example1SVGTitle;" data="example1SVG" />
+
+  <!-- a GIF image is not parsable and can only be referenced as an external entity -->
+  <img title="&example1GIFTitle;" data="example1GIF" />
+</sgml>

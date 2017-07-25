@@ -21,15 +21,12 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.DefaultHandler2;
-import org.xml.sax.ext.EntityResolver2;
 
 /**
  *
@@ -48,7 +45,7 @@ public class TestContentHandler extends DefaultHandler2 implements LSResourceRes
     
     @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return null;
     }
 
     @Override
@@ -166,5 +163,5 @@ public class TestContentHandler extends DefaultHandler2 implements LSResourceRes
         }
         return ret;
     }
-                
+    
 }

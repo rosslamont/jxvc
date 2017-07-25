@@ -19,9 +19,12 @@ import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -46,13 +49,22 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
 
     @Test
     public void simpleSAXRootXSDValidatorHandler(){
-        Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
-        assertEquals("Should have been no validation errors",0,faults.size());
+        try{
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     
     @Test
     public void simpleSAXRootFailXSDValidatorHandler() throws SAXParseException{
+        try{
         Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRootFail.xml");
         assertEquals("Should have been validation errors", 1,faults.size());
         SAXException se = faults.iterator().next();
@@ -62,17 +74,33 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         final int FAIL_COL_NO=16;
         assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
         assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     @Test
     public void simpleSAXRootXSDValidator() throws SAXException{
+        try{
         Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml");
         assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     
     @Test
     public void simpleSAXRootFailXSDValidator() throws SAXException{
+        try{
         Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRootFail.xml");
         assertEquals("Should have been validation errors", 1,faults.size());
         SAXException se = faults.iterator().next();
@@ -82,49 +110,87 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         final int FAIL_COL_NO=16;
         assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
         assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
-        
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     @Test
     public void simpleDOMRootXSDValidator() throws SAXException{
-        Collection<SAXParseException> faults=performDOMValidatorTest("/xml-model/simpleRoot.xml");
-        assertEquals("Should have been no validation errors",0,faults.size());
+        try{
+            Collection<SAXParseException> faults=performDOMValidatorTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     
     @Test
     public void simpleDOMRootFailXSDValidator() throws SAXException{
-        Collection<SAXParseException> faults=performDOMValidatorTest("/xml-model/simpleRootFail.xml");
-        assertEquals("Should have been validation errors", 1,faults.size());
-        SAXException se = faults.iterator().next();
-        assertTrue("Exception thrown should have been a SAX ParseException",se instanceof SAXParseException);
-        SAXParseException spe = (SAXParseException) se;
-        final int FAIL_LINE_NO=20;
-        final int FAIL_COL_NO=16;
-        assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
-        assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
+        try{
+            Collection<SAXParseException> faults=performDOMValidatorTest("/xml-model/simpleRootFail.xml");
+            assertEquals("Should have been validation errors", 1,faults.size());
+            SAXException se = faults.iterator().next();
+            assertTrue("Exception thrown should have been a SAX ParseException",se instanceof SAXParseException);
+            SAXParseException spe = (SAXParseException) se;
+            final int FAIL_LINE_NO=20;
+            final int FAIL_COL_NO=16;
+            assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
+            assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
 
 
     @Test
     public void simpleSAXRootXSDXSIValidatorHandler(){
-        Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xsi/simpleRoot.xml");
-        assertEquals("Should have been no validation errors",0,faults.size());
+        try{
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xsi/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
     
     
     @Test
     public void simpleSAXRootFailXSDXSIValidatorHandler() throws SAXParseException{
-        Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xsi/simpleRootFail.xml");
-        assertEquals("Should have been validation errors", 1,faults.size());
-        SAXException se = faults.iterator().next();
-        assertTrue("Exception thrown should have been a SAX ParseException",se instanceof SAXParseException);
-        SAXParseException spe = (SAXParseException) se;
-        final int FAIL_LINE_NO=22;
-        final int FAIL_COL_NO=16;
-        assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
-        assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
+        try{
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xsi/simpleRootFail.xml");
+            assertEquals("Should have been validation errors", 1,faults.size());
+            SAXException se = faults.iterator().next();
+            assertTrue("Exception thrown should have been a SAX ParseException",se instanceof SAXParseException);
+            SAXParseException spe = (SAXParseException) se;
+            final int FAIL_LINE_NO=22;
+            final int FAIL_COL_NO=16;
+            assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
+            assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
     }
 
     @Override
