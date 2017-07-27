@@ -18,13 +18,10 @@ package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.ValidatorHandler;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;

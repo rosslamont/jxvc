@@ -15,7 +15,6 @@
  */
 package com.componentcorp.xml.validation;
 
-import com.componentcorp.xml.validation.ValidationConstants;
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
@@ -27,11 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -40,11 +34,6 @@ import javax.xml.validation.SchemaFactory;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSParser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
