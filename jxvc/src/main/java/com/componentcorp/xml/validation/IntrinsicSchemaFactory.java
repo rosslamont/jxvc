@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;

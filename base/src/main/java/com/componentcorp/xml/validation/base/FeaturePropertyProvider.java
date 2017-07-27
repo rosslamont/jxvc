@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation.base;
 
 import java.util.Collection;
 import org.xml.sax.SAXNotRecognizedException;
@@ -33,31 +33,4 @@ public interface FeaturePropertyProvider {
 
     void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException;
     
-}
-
-interface FeaturePropertyProviderInternal extends FeaturePropertyProvider{
-
-    public enum ReadWriteable{
-        UNSUPPORTED,
-        READ_ONLY,
-        WRITE_ONLY,
-        READ_WRITE
-    } ;
-    
-    ReadWriteable getPropertySupported(String name);
-    ReadWriteable getFeatureSupported(String name);
-    Collection<String> getSupportedProperties();
-    Collection<String> getSupportedFeatures();
-
-    void addAllowedFeature(String name,ReadWriteable supportedState);
-
-    void addAllowedProperty(String name,ReadWriteable supportedState);
-    
-    void setReadOnlyFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException;
-
-    void setReadOnlyProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException;
-    
-    <T> T getWriteOnlyProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
-    
-    boolean getWriteOnlyFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 }

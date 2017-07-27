@@ -53,7 +53,7 @@
 
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation.base;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -63,7 +63,7 @@ import java.util.Map;
  *
  * @author rlamont
  */
-class ProcessingInstructionParser {
+public class ProcessingInstructionParser {
     // The following function is copied from the JDOM project
 	/**
 	 * This will parse and load the instructions for the PI.

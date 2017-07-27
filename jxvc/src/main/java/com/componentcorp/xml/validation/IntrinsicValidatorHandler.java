@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.ProcessingInstructionParser;
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.ref.ReferenceQueue;

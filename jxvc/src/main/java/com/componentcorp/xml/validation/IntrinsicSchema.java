@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 import javax.xml.validation.ValidatorHandler;

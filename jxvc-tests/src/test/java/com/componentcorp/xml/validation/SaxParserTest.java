@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.componentcorp.xml.relaxng.validator;
+package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.io.IOException;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import org.xml.sax.SAXNotSupportedException;
  *
  * @author rlamont
  */
-class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal{
+class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
     
     private  final Map<String,Boolean> featureMap=new HashMap<String, Boolean>();
     private  final Map<String,Object> propertyMap=new HashMap<String, Object>();

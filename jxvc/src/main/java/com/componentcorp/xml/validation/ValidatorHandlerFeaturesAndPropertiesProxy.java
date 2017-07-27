@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import javax.xml.validation.ValidatorHandler;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
 import javax.xml.XMLConstants;
 import javax.xml.validation.SchemaFactory;

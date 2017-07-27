@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.ValidationConstants;
+import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import static com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest.INTRINSIC_NS_URI;
 import com.componentcorp.xml.validation.test.helpers.TestContentHandler;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.componentcorp.xml.validator;
+package com.componentcorp.xml.validation;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -76,8 +76,8 @@ public interface ValidationConstants {
      * Many ValidatorHandlers will require further configuration (via {@link ValidatorHandler#setFeature(java.lang.String, boolean)} or 
      * {@link ValidatorHandler#setProperty(java.lang.String, java.lang.Object)} ).
      * 
-     * To achieve this, set this write-only property on the IntrinsicSchemaFactory to a class implementing {@link ValidatorHandlerConstructionCallback}.
-     * When an {@link IntrinsicSchema} constructs an {@link IntrinsicValidatorHandler}, it will call this callback passing you a proxy {@link FeaturePropertyProvider}
+     * To achieve this, set this write-only property on the IntrinsicSchemaFactory to a class implementing {@link com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback}.
+     * When an {@link IntrinsicSchema} constructs an {@link IntrinsicValidatorHandler}, it will call this callback passing you a proxy {@link com.componentcorp.xml.validation.base.FeaturePropertyProvider}
      * which enables you to access and modify features and properties of the IntrinsicValidatorHandler.
      * 
      * Note that the callback has thread scope.  i.e. it is stored in a {@link java.lang.ThreadLocal}.  When using multiple {@link javax.xml.validation.Schema}, 
