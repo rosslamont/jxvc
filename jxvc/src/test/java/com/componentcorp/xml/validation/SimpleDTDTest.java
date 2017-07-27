@@ -123,7 +123,7 @@ public class SimpleDTDTest extends BaseXMLValidationTest{
             assertNull("DeclHandler not called: incorrect last External Entity Public Id",declHandler.lastExternalEntityDeclPublicId);
             assertNotNull("DeclHandler not called: incorrect last External Entity System Id",declHandler.lastExternalEntityDeclSystemId);
             
-            assertTrue("DeclHandler not called: incorrect last External Entity System Id",declHandler.lastExternalEntityDeclSystemId.endsWith("/jxvc/jxvc/src/test/resources/dtd/example1.svg"));
+            assertTrue("DeclHandler not called: incorrect last External Entity System Id",declHandler.lastExternalEntityDeclSystemId.endsWith("/resources/dtd/example1.svg"));
         } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an SAXException creating schema");
