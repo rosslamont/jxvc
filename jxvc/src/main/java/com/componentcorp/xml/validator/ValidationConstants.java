@@ -16,8 +16,11 @@
 
 package com.componentcorp.xml.validator;
 
+import javax.xml.validation.ValidatorHandler;
+
 /**
- *
+ * Utility class to contain standard constants, particularly including standard 
+ * property and feature identifiers.
  * @author rlamont
  */
 public interface ValidationConstants {
@@ -52,7 +55,7 @@ public interface ValidationConstants {
      * Property which causes xml-model processing to only apply schema marked as belonging to the same named group.  Provide a String or Collection of Strings
      * to indicate active groups.  See...
      */
-    public static final String PROPERTY_XML_MODEL_GROUPS="http://com.componentcorp.xml.validator.ValidationConstants/feature/xml-model-groups";
+    public static final String PROPERTY_XML_MODEL_GROUPS="http://com.componentcorp.xml.validator.ValidationConstants/property/xml-model-groups";
     
     
     /**
@@ -64,5 +67,48 @@ public interface ValidationConstants {
      * If no validator is discovered from the document before the first element, then load the validator from the validation factory identified by this 
      * URI.  The default value is {@link javax.xml.XMLConstants#W3C_XML_SCHEMA_NS_URI}.  Can be set to null to disable default validation.
      */
-    public static final String PROPERTY_DEFAULT_VALIDATOR="http://com.componentcorp.xml.validator.ValidationConstants/feature/xml-model-group";
+    public static final String PROPERTY_DEFAULT_VALIDATOR="http://com.componentcorp.xml.validator.ValidationConstants/property/xml-model-group";
+    
+    
+    /**
+     * When using JAXP techniques to validate a document, any ValidatorHandler will be instantiated in an opaque manner.  This means under normal
+     * circumstances it is impossible to access the ValidatorHandler instance or subordinate instances in the case of the IntrinsicValidator.  
+     * Many ValidatorHandlers will require further configuration (via {@link ValidatorHandler#setFeature(java.lang.String, boolean)} or 
+     * {@link ValidatorHandler#setProperty(java.lang.String, java.lang.Object)} ).
+     * 
+     * To achieve this, set this write-only property on the IntrinsicSchemaFactory to a class implementing {@link ValidatorHandlerConstructionCallback}.
+     * When an {@link IntrinsicSchema} constructs an {@link IntrinsicValidatorHandler}, it will call this callback passing you a proxy {@link FeaturePropertyProvider}
+     * which enables you to access and modify features and properties of the IntrinsicValidatorHandler.
+     * 
+     * Note that the callback has thread scope.  i.e. it is stored in a {@link java.lang.ThreadLocal}.  When using multiple {@link javax.xml.validation.Schema}, 
+     * {@link javax.xml.parsers.SAXParser} or {@link javax.xml.parsers.DocumentBuilder} objects in the same thread, it can be very 
+     * easy to create unexpected behaviors, as the Schemas will share the same Callback.  To avoid problems, set this property just before creating
+     * a {@link javax.xml.parsers.SAXParser} or {@link javax.xml.parsers.DocumentBuilder} and do not create another 
+     * {@link javax.xml.parsers.SAXParser} or {@link javax.xml.parsers.DocumentBuilder} until the callback has been called.  Typically the callback
+     * will be called immediately upon creation of these objects, but it may be that you have to wait until the first parse.
+     */
+    public static final String PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK="http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback";
+
+
+    /**
+     * Read-only property on {@link IntrinsicValidatorHandler} which can be used to retrieve a proxy {@link org.xml.sax.ext.DeclHandler} which wraps the IntrinsicValidatorHandler.
+     * 
+     * IntrinsicValidatorHandlers implement {@link org.xml.sax.ext.DeclHandler} so they can delegate DTD Structure validation to a DTD Validator.  This proxy can then be 
+     * passed to a {@link javax.xml.parsers.SAXParser} (see {@link org.xml.sax.ext.DeclHandler}) to enable the Handler to receive these events.
+     * 
+     * Note that JAXP style {@link org.xml.sax.ext.DeclHandler}s can not be made to work with DocumentBuilder at this time.
+     */
+    public static final String PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER="http://com.componentcorp.xml.validator.ValidationConstants/property/validator-as-declaration-handler";
+    
+    /**
+     * This property can be applied to a {@link IntrinsicValidatorHandler} to declare that the handler wraps a user defined {@link org.xml.sax.ext.DeclHandler}.  To use this feature,
+     * you must also use the {@link #PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER} property to retrieve a proxy DeclHandler which can then be set on a {@link javax.xml.parsers.SAXParser}.
+     * TODO: How does DocumentBuilder work?
+     * 
+     * Note that this property is the same as that defined in the documentation of {@link org.xml.sax.ext.DeclHandler}.
+     * 
+     * Note that JAXP style {@link org.xml.sax.ext.DeclHandler}s can not be made to work with DocumentBuilder at this time.
+     */
+    public static String PROPERTY_DECLARATION_HANDLER="http://xml.org/sax/properties/declaration-handler";
+    
 }

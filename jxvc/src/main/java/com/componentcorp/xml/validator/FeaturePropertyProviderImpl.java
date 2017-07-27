@@ -31,20 +31,31 @@ import org.xml.sax.SAXNotSupportedException;
  * @author rlamont
  */
 class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal{
+    
     private  final Map<String,Boolean> featureMap=new HashMap<String, Boolean>();
     private  final Map<String,Object> propertyMap=new HashMap<String, Object>();
-    private  final Set<String> supportedFeatures=new HashSet<String>();
-    private  final Set<String> supportedProperties=new HashSet<String>();
-    private final Set<String> unmodifiableSupportedFeatures = Collections.unmodifiableSet(supportedFeatures);
-    private final Set<String> unmodifiableSupportedProperties = Collections.unmodifiableSet(supportedProperties);
+    private  final Map<String,ReadWriteable> supportedFeatures=new HashMap<String,ReadWriteable>();
+    private  final Map<String,ReadWriteable>  supportedProperties=new HashMap<String,ReadWriteable>();
+    private final Map<String,ReadWriteable> unmodifiableSupportedFeatures = Collections.unmodifiableMap(supportedFeatures);
+    private final Map<String,ReadWriteable> unmodifiableSupportedProperties = Collections.unmodifiableMap(supportedProperties);
     
 
     public FeaturePropertyProviderImpl() {
     }
     
     public FeaturePropertyProviderImpl(FeaturePropertyProviderInternal copy) {
-        supportedFeatures.addAll(copy.getSupportedFeatures());
-        supportedProperties.addAll(copy.getSupportedProperties());
+        if (copy instanceof FeaturePropertyProviderImpl){
+            supportedFeatures.putAll(((FeaturePropertyProviderImpl) copy).supportedFeatures);
+            supportedProperties.putAll(((FeaturePropertyProviderImpl) copy).supportedProperties);
+        }
+        else{
+            for (String feature:copy.getSupportedFeatures()){
+                supportedFeatures.put(feature, copy.getFeatureSupported(feature));
+            }
+            for (String property:copy.getSupportedProperties()){
+                supportedProperties.put(property, copy.getPropertySupported(property));
+            }
+        }
         for (String feature:copy.getSupportedFeatures()){
             try{
                 featureMap.put(feature, copy.getFeature(feature));
@@ -59,16 +70,27 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal{
         }
     }
     
-    public void addAllowedFeature(String name){
-        supportedFeatures.add(name);
+    public void addAllowedFeature(String name,ReadWriteable supportedState){
+        if (supportedState==ReadWriteable.UNSUPPORTED){
+            supportedFeatures.remove(name);
+        }
+        else{
+            supportedFeatures.put(name,supportedState);
+        }
     }
     
-    public void addAllowedProperty(String name){
-        supportedProperties.add(name);
+    public void addAllowedProperty(String name,ReadWriteable supportedState){
+        if (supportedState==ReadWriteable.UNSUPPORTED){
+            supportedProperties.remove(name);
+        }
+        else{
+            supportedProperties.put(name, supportedState);
+        }
     }
 
     public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (!supportedFeatures.contains(name)){
+        ReadWriteable rw=supportedFeatures.get(name);
+        if (rw==null || rw==ReadWriteable.WRITE_ONLY){
             throw new SAXNotRecognizedException();
         }
         Boolean b= featureMap.get(name);
@@ -79,40 +101,87 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal{
     }
 
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (!supportedProperties.contains(name)){
+        ReadWriteable rw=supportedProperties.get(name);
+        if (rw==null || rw==ReadWriteable.WRITE_ONLY){
             throw new SAXNotRecognizedException();
         }
         return propertyMap.get(name);
     }
 
     public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (!supportedFeatures.contains(name)){
+        ReadWriteable rw=supportedFeatures.get(name);
+        if (rw==null || rw==ReadWriteable.READ_ONLY){
             throw new SAXNotRecognizedException();
         }
         featureMap.put(name, value);
     }
 
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (!supportedProperties.contains(name)){
+         ReadWriteable rw=supportedProperties.get(name);
+        if (rw==null || rw==ReadWriteable.READ_ONLY){
             throw new SAXNotRecognizedException();
         }
         propertyMap.put(name, object);
     }
 
-    public boolean isPropertySupported(String name) {
-        return supportedProperties.contains(name);
+    @Override
+    public void setReadOnlyFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+        ReadWriteable rw=supportedFeatures.get(name);
+        if (rw==null ){
+            throw new SAXNotRecognizedException();
+        }
+        featureMap.put(name, value);
     }
 
-    public boolean isFeatureSupported(String name) {
-        return supportedFeatures.contains(name);
+    @Override
+    public void setReadOnlyProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+         ReadWriteable rw=supportedProperties.get(name);
+        if (rw==null ){
+            throw new SAXNotRecognizedException();
+        }
+        propertyMap.put(name, object);
+    }
+
+    @Override
+    public Object getWriteOnlyProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+        ReadWriteable rw=supportedProperties.get(name);
+        if (rw==null){
+            throw new SAXNotRecognizedException();
+        }
+        return propertyMap.get(name);
+    }
+
+    @Override
+    public boolean getWriteOnlyFeature(String name)  throws SAXNotRecognizedException, SAXNotSupportedException{
+        ReadWriteable rw=supportedFeatures.get(name);
+        if (rw==null ){
+            throw new SAXNotRecognizedException();
+        }
+        Boolean b= featureMap.get(name);
+        if (b==null){
+            return false;
+        }
+        return b;
+    }
+    
+    
+
+    public ReadWriteable getPropertySupported(String name) {
+        ReadWriteable property = supportedProperties.get(name);
+        return property==null?ReadWriteable.UNSUPPORTED:property;
+    }
+
+    public ReadWriteable getFeatureSupported(String name) {
+        ReadWriteable feature = supportedFeatures.get(name);
+        return feature==null?ReadWriteable.UNSUPPORTED:feature;
     }
 
     public Collection<String> getSupportedProperties() {
-        return unmodifiableSupportedProperties;
+        return unmodifiableSupportedProperties.keySet();
     }
 
     public Collection<String> getSupportedFeatures() {
-        return unmodifiableSupportedFeatures;
+        return unmodifiableSupportedFeatures.keySet();
     }
     
 }

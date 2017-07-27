@@ -54,10 +54,12 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
     private final FeaturePropertyProviderInternal featuresAndProperties;
+    private final IntrinsicSchemaFactory parent;
 
-    IntrinsicValidator(FeaturePropertyProviderInternal featuresAndProperties) {
+    IntrinsicValidator(IntrinsicSchemaFactory parent,FeaturePropertyProviderInternal featuresAndProperties) {
         this.featuresAndProperties=featuresAndProperties;
-        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE);
+        this.parent=parent;
+        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
     }
 
@@ -98,7 +100,7 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
             }
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
             parserFactory.setNamespaceAware(featuresAndProperties.getFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE));
-            IntrinsicSchema schema = new IntrinsicSchema(featuresAndProperties);
+            IntrinsicSchema schema = new IntrinsicSchema(parent, featuresAndProperties);
             
             parserFactory.setSchema(schema);
             //ValidatorHandler intrinsicValidator = schema.newValidatorHandler();

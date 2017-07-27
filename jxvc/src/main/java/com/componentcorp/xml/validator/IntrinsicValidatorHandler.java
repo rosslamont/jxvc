@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -55,20 +57,22 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author rlamont
  */
-class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,DeclHandler,LexicalHandler,  FeaturePropertyProvider{
+class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler,FeaturePropertyProvider{
     
-    private Sax2DefaultHandlerWrapper contentHandler=new Sax2DefaultHandlerWrapper(null, null);
+    private Sax2DefaultHandlerWrapper contentHandler=new Sax2DefaultHandlerWrapper(null, null,false);
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
     private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
     private final Map<String,ValidatorHandlerProxy> discoveredValidatorsForFeaturesMap=new HashMap<String, ValidatorHandlerProxy>();
     private final Map<String,Sax2DefaultHandlerWrapper> validatorCache=new WeakHashMap<String, Sax2DefaultHandlerWrapper>();
-    private final Collection<Sax2DefaultHandlerWrapper> currentOrderedValidators=new ArrayList<Sax2DefaultHandlerWrapper>();
+    private final List<Sax2DefaultHandlerWrapper> currentOrderedValidators=new ArrayList<Sax2DefaultHandlerWrapper>();
     private boolean firstElementPassed=false;
     private final Collection<DeferredAction> deferredActions=new ArrayList();
     private Locator locator;
     //private final Set<String> foundNamespaces=new HashSet<String>();    //Used to manage Section 4.3.2.4 of https://www.w3.org/TR/xmlschema-1
     private final FeaturePropertyProviderInternal featuresAndProperties;
+    private ContentHandler firstContentHandler=null;
+    private DeclHandler firstDeclHandler=null;
     
     
     
@@ -77,11 +81,14 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     
     IntrinsicValidatorHandler(FeaturePropertyProviderInternal factory){
         featuresAndProperties=factory;
+        featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER, FeaturePropertyProviderInternal.ReadWriteable.READ_ONLY);
+        featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
     }
 
     @Override
     public void setContentHandler(ContentHandler receiver) {
-        this.contentHandler=new Sax2DefaultHandlerWrapper(receiver, null);
+        //TODO: There needs to be property to check to see if we should use it as a DeclHandler or not
+        this.contentHandler=new Sax2DefaultHandlerWrapper(receiver, null,true);
     }
 
     @Override
@@ -176,10 +183,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     }
     
     private void startDocumentInternal() throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.startDocument();
-        }
-        contentHandler.startDocument();
+        firstContentHandler.startDocument();
     }
 
     public void endDocument() throws SAXException {
@@ -187,10 +191,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
         //to defer to.  Instead we flush out any deferred actions and then
         //just end.
         performDeferredActions();
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.endDocument();
-        }
-        contentHandler.endDocument();
+        firstContentHandler.endDocument();
     }
 
     public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
@@ -209,10 +210,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     
 
     private void startPrefixMappingInternal(String prefix, String uri) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.startPrefixMapping(prefix, uri);
-        }
-        contentHandler.startPrefixMapping(prefix, uri);
+        firstContentHandler.startPrefixMapping(prefix, uri);
     }
 
     public void endPrefixMapping(final String prefix) throws SAXException {
@@ -231,10 +229,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     
     
     private void endPrefixMappingInternal(String prefix) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.endPrefixMapping(prefix);
-        }
-        contentHandler.endPrefixMapping(prefix);
+        firstContentHandler.endPrefixMapping(prefix);
     }
 
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
@@ -242,18 +237,12 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
         if (!firstElementPassed){
             handleRootElement(uri,localName,qName,atts);
         }
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.startElement(uri, localName, qName, atts);
-        }
-        contentHandler.startElement(uri, localName, qName, atts);
+        firstContentHandler.startElement(uri, localName, qName, atts);
     }
 
     
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.endElement(uri, localName, qName);
-        }
-        contentHandler.endElement(uri, localName, qName);
+        firstContentHandler.endElement(uri, localName, qName);
     }
 
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
@@ -271,10 +260,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
 
     
     private void charactersInternal(char[] ch, int start, int length) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.characters(ch, start, length);
-        }
-        contentHandler.characters(ch, start, length);
+        firstContentHandler.characters(ch, start, length);
     }
 
     public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
@@ -291,10 +277,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     }
 
     private void ignorableWhitespaceInternal(char[] ch, int start, int length) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.ignorableWhitespace(ch, start, length);
-        }
-        contentHandler.ignorableWhitespace(ch, start, length);
+        firstContentHandler.ignorableWhitespace(ch, start, length);
     }
 
     public void processingInstruction(final String target, final String data) throws SAXException {
@@ -314,10 +297,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     }
     
     private void processingInstructionInternal(String target, String data) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.processingInstruction(target, data);
-        }
-        contentHandler.processingInstruction(target, data);
+        firstContentHandler.processingInstruction(target, data);
     }
 
     public void skippedEntity(final String name) throws SAXException {
@@ -334,73 +314,8 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     }
 
     private void skippedEntityInternal(String name) throws SAXException {
-        for(Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
-            wrapper.skippedEntity(name);
-        }
-        contentHandler.skippedEntity(name);
+        firstContentHandler.skippedEntity(name);
     }
-    
-    // DTD Handler
-
-    public void notationDecl(String name, String publicId, String systemId) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
-    // DeclHandler
-
-    public void elementDecl(String name, String model) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void attributeDecl(String eName, String aName, String type, String mode, String value) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void internalEntityDecl(String name, String value) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
-    //LexicalHandler
-
-    public void startDTD(String name, String publicId, String systemId) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void endDTD() throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void startEntity(String name) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void endEntity(String name) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void startCDATA() throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void endCDATA() throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void comment(char[] ch, int start, int length) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
     
     /**
      * The following features are supported: TODO
@@ -438,7 +353,12 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
 
     @Override
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        return featuresAndProperties.getProperty(name);
+        Object ret= featuresAndProperties.getProperty(name);
+        if (ret ==null && ValidationConstants.PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER.equals(name)){
+            ret = new AsDeclHandler();
+            featuresAndProperties.setReadOnlyProperty(name, ret);
+        }
+        return ret;
     }
     
     
@@ -531,7 +451,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
                     InputSource inputSource = new InputSource(input.getSystemId());
                     inputSource.setPublicId(input.getPublicId());
                     inputSource.setEncoding(charset);
-                    wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource);
+                    wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource,true);
                     validatorCache.put(href,wrapper);
                 }
             }
@@ -592,7 +512,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
                 try{
                     Schema schema = schemaFactory.newSchema();
                     InputSource inputSource = new InputSource();
-                    wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource);
+                    wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource,true);
                     validatorCache.put(defaultValidatorUri,wrapper);
                 }
                 catch(UnsupportedOperationException uoe){
@@ -604,6 +524,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
             }
             
         }
+        createValidatorChain();
         performDeferredActions();
         if (lateThrow !=null){
             throw lateThrow;
@@ -611,12 +532,101 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
     }
 
     
+    private void createValidatorChain() throws SAXNotRecognizedException, SAXNotSupportedException {
+        firstContentHandler = contentHandler;
+        firstDeclHandler = featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER);
+        ListIterator<Sax2DefaultHandlerWrapper> wrapperIterator = currentOrderedValidators.listIterator(currentOrderedValidators.size());
+        while(wrapperIterator.hasPrevious()){
+            Sax2DefaultHandlerWrapper wrapper=wrapperIterator.previous();
+            wrapper.asValidatorHandler.setContentHandler(firstContentHandler);
+            firstContentHandler=wrapper;
+        }
+    }
+    
     private void addNewValidator(Sax2DefaultHandlerWrapper wrapper)
     {
                 currentOrderedValidators.add(wrapper);
                 //TODO: Tie in the ValidatorHandlerProxy
     }
+
+    //DeclHandler methods
     
+    @Override
+    public void elementDecl(final String name, final String model) throws SAXException {
+        if (firstElementPassed){
+            elementDeclInternal(name, model);
+        }
+        else{
+            deferredActions.add(new DeferredAction() {
+                public void perform()  throws SAXException{
+                    elementDeclInternal(name, model);
+                }
+            });
+        }
+    }
+    public void elementDeclInternal(final String name, final String model) throws SAXException {
+        if (firstDeclHandler!=null){
+            firstDeclHandler.elementDecl(name, model);
+        }
+    }
+
+    @Override
+    public void attributeDecl(final String eName, final String aName, final String type, final String mode, final String value) throws SAXException {
+        if (firstElementPassed){
+            attributeDeclInternal(eName, aName, type, mode, value);
+        }
+        else{
+            deferredActions.add(new DeferredAction() {
+                public void perform()  throws SAXException{
+                    attributeDeclInternal(eName, aName, type, mode, value);
+                }
+            });
+        }
+    }
+    public void attributeDeclInternal(String eName, String aName, String type, String mode, String value) throws SAXException {
+        if (firstDeclHandler!=null){
+            firstDeclHandler.attributeDecl(eName, aName, type, mode, value);
+        }
+    }
+
+    @Override
+    public void internalEntityDecl(final String name, final String value) throws SAXException {
+        if (firstElementPassed){
+            internalEntityDeclInternal(name, value);
+        }
+        else{
+            deferredActions.add(new DeferredAction() {
+                public void perform()  throws SAXException{
+                    internalEntityDeclInternal(name, value);
+                }
+            });
+        }
+    }
+    public void internalEntityDeclInternal(String name, String value) throws SAXException {
+        if (firstDeclHandler!=null){
+            firstDeclHandler.internalEntityDecl(name, value);
+        }
+    }
+
+    @Override
+    public void externalEntityDecl(final String name, final String publicId, final String systemId) throws SAXException {
+        if (firstElementPassed){
+            externalEntityDeclInternal(name, publicId, systemId);
+        }
+        else{
+            deferredActions.add(new DeferredAction() {
+                public void perform()  throws SAXException{
+                    externalEntityDeclInternal(name, publicId, systemId);
+                }
+            });
+        }
+    }
+    public void externalEntityDeclInternal(String name, String publicId, String systemId) throws SAXException {
+        if (firstDeclHandler!=null){
+            firstDeclHandler.externalEntityDecl(name, publicId, systemId);
+        }
+    }
+
     
     /**
      * Proxy which wraps a collection of ValidatorHandlers for a particular
@@ -830,27 +840,20 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
      * <i>Note:</i>Could probably become a package class
      * 
      */
-    private final class Sax2DefaultHandlerWrapper implements ContentHandler,DTDHandler,ErrorHandler,DeclHandler,LexicalHandler{
+    private final class Sax2DefaultHandlerWrapper implements ContentHandler,ErrorHandler,DeclHandler{
         private final ContentHandler asContentHandler;
-        private final DTDHandler asDTDHandler;
-//        private final EntityResolver asEntityResolver;
-        private ErrorHandler errorHandler;
         private final DeclHandler asDeclHandler;
-//        private final EntityResolver2 asEntityResolver2;
-        private final LexicalHandler asLexicalHandler;
+        private ErrorHandler errorHandler;
         private final ValidatorHandler asValidatorHandler;
         private final InputSource inputSource;
 
-        public Sax2DefaultHandlerWrapper(Object handler, InputSource inputSource) {
+        public Sax2DefaultHandlerWrapper(Object handler, InputSource inputSource,boolean useAsDeclHandlerIfPossible) {
             this.inputSource=inputSource;
             asContentHandler=(ContentHandler) (handler instanceof ContentHandler?handler:null);
-            asDTDHandler=(DTDHandler) (handler instanceof DTDHandler?handler:null);
-//            asEntityResolver=(EntityResolver) (handler instanceof EntityResolver?handler:null);
             errorHandler=(ErrorHandler) (handler instanceof ErrorHandler?handler:null);
-            asDeclHandler = (DeclHandler) (handler instanceof DeclHandler?handler:null);
-//            asEntityResolver2=(EntityResolver2) (handler instanceof EntityResolver2?handler:null);
-            asLexicalHandler=(LexicalHandler) (handler instanceof LexicalHandler?handler:null);
             asValidatorHandler=(ValidatorHandler) (handler instanceof ValidatorHandler?handler:null);
+            
+            asDeclHandler = (DeclHandler) (useAsDeclHandlerIfPossible && handler instanceof DeclHandler?handler:null);
         }
         
         //ContentHandler methods
@@ -921,25 +924,6 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
             }
         }
         
-        //DTDHandler Methods
-
-        public void notationDecl(String name, String publicId, String systemId) throws SAXException {
-            if (asDTDHandler!=null){
-                asDTDHandler.notationDecl(name, publicId, systemId);
-            }
-        }
-
-        public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
-            if (asDTDHandler!=null){
-                asDTDHandler.unparsedEntityDecl(name, publicId, systemId, notationName);
-            }
-        }
-//        
-//        //EntityResolver Methods
-//
-//        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-//            return (asEntityResolver!=null)?asEntityResolver.resolveEntity(publicId, systemId):null;
-//        }
         
         //ErrorHandler Methods
 
@@ -961,86 +945,6 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
             }
         }
         
-//        //EntityResolver2 Methods
-//
-//        public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-//            return (asEntityResolver2!=null)?asEntityResolver2.getExternalSubset(name, baseURI):null;
-//        }
-//
-//        public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-//            return (asEntityResolver2!=null)?asEntityResolver2.resolveEntity(name, publicId, baseURI, systemId):null;
-//        }
-        
-        //DeclHandler Methods
-
-        public void elementDecl(String name, String model) throws SAXException {
-            if (asDeclHandler!=null){
-                asDeclHandler.elementDecl(name, model);
-            }
-        }
-
-        public void attributeDecl(String eName, String aName, String type, String mode, String value) throws SAXException {
-            if (asDeclHandler!=null){
-                asDeclHandler.attributeDecl(eName, aName, type, mode, value);
-            }
-        }
-
-        public void internalEntityDecl(String name, String value) throws SAXException {
-            if (asDeclHandler!=null){
-                asDeclHandler.internalEntityDecl(name, value);
-            }
-        }
-
-        public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {
-            if (asDeclHandler!=null){
-                asDeclHandler.externalEntityDecl(name, publicId, systemId);
-            }
-        }
-        
-        //LexicalHandler methods
-
-        public void startDTD(String name, String publicId, String systemId) throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.startDTD(name, publicId, systemId);
-            }
-        }
-
-        public void endDTD() throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.endDTD();
-            }
-        }
-
-        public void startEntity(String name) throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.startEntity(name);
-            }
-        }
-
-        public void endEntity(String name) throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.endEntity(name);
-            }
-        }
-
-        public void startCDATA() throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.startCDATA();
-            }
-        }
-
-        public void endCDATA() throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.endCDATA();
-            }
-        }
-
-        public void comment(char[] ch, int start, int length) throws SAXException {
-            if (asLexicalHandler!=null){
-                asLexicalHandler.comment(ch, start, length);
-            }
-        }
-
         public ValidatorHandler getAsValidatorHandler() {
             return asValidatorHandler;
         }
@@ -1061,8 +965,59 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements DTDHandler,D
                 asValidatorHandler.setResourceResolver(resourceResolver);
             }
         }
+
+        @Override
+        public void elementDecl(String name, String model) throws SAXException {
+            if (asDeclHandler!=null){
+                asDeclHandler.elementDecl(name, model);
+            }
+        }
+
+        @Override
+        public void attributeDecl(String eName, String aName, String type, String mode, String value) throws SAXException {
+            if (asDeclHandler!=null){
+                asDeclHandler.attributeDecl(eName, aName, type, mode, value);
+            }
+        }
+
+        @Override
+        public void internalEntityDecl(String name, String value) throws SAXException {
+            if (asDeclHandler!=null){
+                asDeclHandler.internalEntityDecl(name, value);
+            }
+        }
+
+        @Override
+        public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {
+            if (asDeclHandler!=null){
+                asDeclHandler.externalEntityDecl(name, publicId, systemId);
+            }
+        }
         
         
-        
+    }
+
+    private class AsDeclHandler implements DeclHandler{
+
+        @Override
+        public void elementDecl(String name, String model) throws SAXException {
+            IntrinsicValidatorHandler.this.elementDecl(name, model);
+        }
+
+        @Override
+        public void attributeDecl(String eName, String aName, String type, String mode, String value) throws SAXException {
+            IntrinsicValidatorHandler.this.attributeDecl(eName, aName, type, mode, value);
+        }
+
+        @Override
+        public void internalEntityDecl(String name, String value) throws SAXException {
+            IntrinsicValidatorHandler.this.internalEntityDecl(name, value);
+        }
+
+        @Override
+        public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {
+            IntrinsicValidatorHandler.this.externalEntityDecl(name, publicId, systemId);
+        }
+
     }
 }

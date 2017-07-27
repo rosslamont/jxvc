@@ -16,10 +16,13 @@
 
 package com.componentcorp.xml.validator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -43,12 +46,13 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
 
     public IntrinsicSchemaFactory() {
         FeaturePropertyProviderImpl fAndP=new FeaturePropertyProviderImpl();
-        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB);
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB,false);} catch (SAXException ignore){}
-        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR);
+        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR, XMLConstants.W3C_XML_SCHEMA_NS_URI);}catch(SAXException ignore){}
         //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATION_DISABLED);
         //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS);
+        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.WRITE_ONLY);
         featuresAndProperties=fAndP;
     }
     
@@ -98,7 +102,7 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
 
     @Override
     public Schema newSchema() throws SAXException {
-        return new IntrinsicSchema(new FeaturePropertyProviderImpl(featuresAndProperties));
+        return new IntrinsicSchema(this,new FeaturePropertyProviderImpl(featuresAndProperties));
     }
 
     @Override
@@ -108,6 +112,23 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
 
     @Override
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK.equals(name)){
+            try{
+                ValidatorHandlerConstructionCallback callback = (ValidatorHandlerConstructionCallback) object;
+                ThreadLocal<ValidatorHandlerConstructionCallback> threadLocal= featuresAndProperties.getWriteOnlyProperty(name);
+                if (threadLocal==null){
+                    threadLocal = new ThreadLocal<ValidatorHandlerConstructionCallback>();
+                    featuresAndProperties.setProperty(name, threadLocal);
+                }
+                threadLocal.set(callback);
+                return ;
+            }
+            catch (ClassCastException cce){
+                SAXNotSupportedException snse = new SAXNotSupportedException(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK+" property must be an instance of ValidatorHandlerConstructionCallback");
+                snse.initCause(snse);
+                throw snse;
+            }
+        }
         featuresAndProperties.setProperty(name, object);
     }
 
@@ -119,6 +140,19 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
     @Override
     public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
         return featuresAndProperties.getFeature(name);
+    }
+
+
+    ValidatorHandlerConstructionCallback getValidatorHandlerCallback() {
+        try {
+            ThreadLocal<ValidatorHandlerConstructionCallback> threadLocal= featuresAndProperties.getWriteOnlyProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK);
+            if (threadLocal!=null){
+                return threadLocal.get();
+            }
+        } catch (SAXNotRecognizedException ex) {
+        } catch (SAXNotSupportedException ex) {
+        }
+        return null;
     }
     
     

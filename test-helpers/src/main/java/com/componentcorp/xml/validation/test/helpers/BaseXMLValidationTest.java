@@ -77,7 +77,7 @@ public abstract class BaseXMLValidationTest extends Assert{
     
     }
     
-    private void applyFeaturesAndProperties(SchemaFactory schemaFactory,Map<String,Boolean> features, Map<String,Object> properties) throws SAXNotSupportedException, SAXNotRecognizedException{
+    protected void applyFeaturesAndProperties(SchemaFactory schemaFactory,Map<String,Boolean> features, Map<String,Object> properties) throws SAXNotSupportedException, SAXNotRecognizedException{
         
         for (Map.Entry<String,Boolean> feature:features.entrySet()){
             Boolean b = feature.getValue();

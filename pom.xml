@@ -24,7 +24,7 @@
       <developerConnection>scm:git:https://github.com/rosslamont/jxvc.git</developerConnection>
       <url>https://github.com/rosslamont/jxvc/tree/master</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -106,6 +106,7 @@
         <module>relaxng</module>
         <module>relaxng-compact</module>
         <module>test-helpers</module>
+        <module>base</module>
     </modules>
     <distributionManagement>
       <snapshotRepository>

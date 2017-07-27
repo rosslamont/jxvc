@@ -9,11 +9,14 @@
         <version>0.2.2-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    <organization><name>Component Corporation Pty Ltd</name></organization>
-    <name>XML Validation and Schema Association</name>
-    <url>http://maven.apache.org</url>
+    <name>XML Schema Association and Validation</name>
 
     <dependencies>
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

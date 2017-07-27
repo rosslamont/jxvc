@@ -27,7 +27,7 @@ public interface FeaturePropertyProvider {
 
     boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 
-    Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
+    <T> T getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 
     void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException;
 
@@ -36,12 +36,28 @@ public interface FeaturePropertyProvider {
 }
 
 interface FeaturePropertyProviderInternal extends FeaturePropertyProvider{
-    boolean isPropertySupported(String name);
-    boolean isFeatureSupported(String name);
+
+    public enum ReadWriteable{
+        UNSUPPORTED,
+        READ_ONLY,
+        WRITE_ONLY,
+        READ_WRITE
+    } ;
+    
+    ReadWriteable getPropertySupported(String name);
+    ReadWriteable getFeatureSupported(String name);
     Collection<String> getSupportedProperties();
     Collection<String> getSupportedFeatures();
 
-    void addAllowedFeature(String name);
+    void addAllowedFeature(String name,ReadWriteable supportedState);
 
-    void addAllowedProperty(String name);
+    void addAllowedProperty(String name,ReadWriteable supportedState);
+    
+    void setReadOnlyFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException;
+
+    void setReadOnlyProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException;
+    
+    <T> T getWriteOnlyProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
+    
+    boolean getWriteOnlyFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 }

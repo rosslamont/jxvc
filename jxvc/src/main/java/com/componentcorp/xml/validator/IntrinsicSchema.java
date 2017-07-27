@@ -26,19 +26,27 @@ import javax.xml.validation.ValidatorHandler;
  */
 public class IntrinsicSchema extends Schema{
     private final FeaturePropertyProviderInternal featuresAndProperties;
+    private final IntrinsicSchemaFactory parent;
     
-    IntrinsicSchema(FeaturePropertyProviderInternal featuresAndProperties){
+    IntrinsicSchema(IntrinsicSchemaFactory parent,FeaturePropertyProviderInternal featuresAndProperties){
         this.featuresAndProperties=featuresAndProperties;
+        this.featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.UNSUPPORTED);
+        this.parent=parent;
     }
 
     @Override
     public Validator newValidator() {
-        return new IntrinsicValidator(new FeaturePropertyProviderImpl(featuresAndProperties));
+        return new IntrinsicValidator(parent,new FeaturePropertyProviderImpl(featuresAndProperties));
     }
 
     @Override
     public ValidatorHandler newValidatorHandler() {
-        return new IntrinsicValidatorHandler(new FeaturePropertyProviderImpl(featuresAndProperties));
+        ValidatorHandlerConstructionCallback callback = parent.getValidatorHandlerCallback();
+        ValidatorHandler handler= new IntrinsicValidatorHandler(new FeaturePropertyProviderImpl(featuresAndProperties));
+        if (callback!=null){
+            callback.onConstruction(new ValidatorHandlerFeaturesAndPropertiesProxy(handler));
+        }
+        return handler;
     }
     
 }
