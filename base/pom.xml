@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.componentcorp.xml.validation</groupId>
         <artifactId>jxvc-master</artifactId>
-        <version>0.2.3-SNAPSHOT</version>
+        <version>0.2.3</version>
     </parent>
     <artifactId>base</artifactId>
     <packaging>jar</packaging>
