@@ -16,6 +16,7 @@
 
 package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.ChainableDeclHandler;
 import com.componentcorp.xml.validation.base.ProcessingInstructionParser;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import java.io.InputStream;
@@ -26,14 +27,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
-import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -44,7 +42,6 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.DTDHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -53,7 +50,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.DeclHandler;
-import org.xml.sax.ext.LexicalHandler;
 
 /**
  *
@@ -526,7 +522,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             }
             
         }
-        createValidatorChain();
+        chainValidatorsAndDeclHandlers();
         performDeferredActions();
         if (lateThrow !=null){
             throw lateThrow;
@@ -534,7 +530,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     }
 
     
-    private void createValidatorChain() throws SAXNotRecognizedException, SAXNotSupportedException {
+    private void chainValidatorsAndDeclHandlers() throws SAXNotRecognizedException, SAXNotSupportedException {
         firstContentHandler = contentHandler;
         firstDeclHandler = featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER);
         ListIterator<Sax2DefaultHandlerWrapper> wrapperIterator = currentOrderedValidators.listIterator(currentOrderedValidators.size());
@@ -542,6 +538,15 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             Sax2DefaultHandlerWrapper wrapper=wrapperIterator.previous();
             wrapper.asValidatorHandler.setContentHandler(firstContentHandler);
             firstContentHandler=wrapper;
+            if (wrapper.asDeclHandler!=null){
+                if (wrapper.asDeclHandler instanceof ChainableDeclHandler){
+                    ((ChainableDeclHandler)wrapper.asDeclHandler).setNextInChain(firstDeclHandler);
+                    firstDeclHandler=wrapper.asDeclHandler;
+                }
+                else{
+                    firstDeclHandler = new TeeChainableDeclHandler(wrapper.asDeclHandler,firstDeclHandler);
+                }
+            }
         }
     }
     
@@ -626,6 +631,50 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     public void externalEntityDeclInternal(String name, String publicId, String systemId) throws SAXException {
         if (firstDeclHandler!=null){
             firstDeclHandler.externalEntityDecl(name, publicId, systemId);
+        }
+    }
+
+    private static class TeeChainableDeclHandler implements ChainableDeclHandler{
+        private final DeclHandler chainTo;
+        private final DeclHandler wrap;
+
+        public TeeChainableDeclHandler(DeclHandler wrap, DeclHandler chainTo) {
+            this.wrap=wrap;
+            this.chainTo=chainTo;
+        }
+
+        @Override
+        public void elementDecl(String name, String model) throws SAXException {
+            wrap.elementDecl(name, model);
+            chainTo.elementDecl(name, model);
+        }
+
+        @Override
+        public void attributeDecl(String eName, String aName, String type, String mode, String value) throws SAXException {
+            wrap.attributeDecl(eName, aName, type, mode, value);
+            chainTo.attributeDecl(eName, aName, type, mode, value);
+        }
+
+        @Override
+        public void internalEntityDecl(String name, String value) throws SAXException {
+            wrap.internalEntityDecl(name, value);
+            chainTo.internalEntityDecl(name, value);
+        }
+
+        @Override
+        public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {
+            wrap.externalEntityDecl(name, publicId, systemId);
+            chainTo.externalEntityDecl(name, publicId, systemId);
+        }
+
+        @Override
+        public void setNextInChain(DeclHandler declHandler) {
+            throw new UnsupportedOperationException("This ChainableDeclHandler is readOnly."); 
+        }
+
+        @Override
+        public DeclHandler getNextInChain() {
+            return chainTo;
         }
     }
 
