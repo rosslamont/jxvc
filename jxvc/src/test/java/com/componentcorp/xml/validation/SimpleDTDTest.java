@@ -121,7 +121,9 @@ public class SimpleDTDTest extends BaseXMLValidationTest{
             assertEquals("DeclHandler not called: incorrect last Internal Entity Value","Title of example1.gif",declHandler.lastInternalEntityDeclValue);
             assertEquals("DeclHandler not called: incorrect last External Entity Name","example1SVG",declHandler.lastExternalEntityDeclName);
             assertNull("DeclHandler not called: incorrect last External Entity Public Id",declHandler.lastExternalEntityDeclPublicId);
-            assertEquals("DeclHandler not called: incorrect last External Entity System Id","file://file:///Users/rlamont/Development/jxvc/jxvc/src/test/resources/dtd/example1.svg",declHandler.lastExternalEntityDeclSystemId);
+            assertNotNull("DeclHandler not called: incorrect last External Entity System Id",declHandler.lastExternalEntityDeclSystemId);
+            
+            assertTrue("DeclHandler not called: incorrect last External Entity System Id",declHandler.lastExternalEntityDeclSystemId.endsWith("/jxvc/jxvc/src/test/resources/dtd/example1.svg"));
         } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an SAXException creating schema");
