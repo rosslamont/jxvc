@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -393,6 +394,9 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         String charset=xmlModelPseudoAttributes.get(CHARSET);
         String title=xmlModelPseudoAttributes.get(TITLE);
         String group=xmlModelPseudoAttributes.get(GROUP);
+        if ("".equals(group)){
+            group=null;
+        }
         String phase=xmlModelPseudoAttributes.get(PHASE);
         SchemaFactory factory=null;
         if (href==null){
@@ -402,6 +406,18 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             Charset checkCharset=Charset.forName(charset);
             if (checkCharset==null){
                 throw new SAXParseException(charset+" is not a known charset in xml-model processing instruction", locator);
+            }
+        }
+        if (!getFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS)){
+            Set<String> groups = (Set<String>) getProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS);
+            if (groups==null && group!=null && !group.isEmpty()){
+                return;
+            }
+            if (group==null && groups!=null && !(groups.contains(null) || groups.contains(""))){
+                return;
+            }
+            if (group!=null && groups!=null && !groups.contains(group)){
+                return;
             }
         }
         //lookup cache

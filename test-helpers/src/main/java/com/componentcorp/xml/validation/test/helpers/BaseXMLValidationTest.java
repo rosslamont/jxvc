@@ -5,6 +5,8 @@
  */
 package com.componentcorp.xml.validation.test.helpers;
 
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -53,6 +55,7 @@ public abstract class BaseXMLValidationTest extends Assert{
             fail("Should have found the intrinsic factory");
         }
         try {
+            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
             Schema schema = schemaFactory.newSchema();
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
@@ -99,6 +102,7 @@ public abstract class BaseXMLValidationTest extends Assert{
             fail("Should have found the intrinsic factory");
         }
         try {
+            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
             Schema schema = schemaFactory.newSchema();
             //ValidatorHandler handler =schema.newValidatorHandler();
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
@@ -129,6 +133,7 @@ public abstract class BaseXMLValidationTest extends Assert{
             fail("Should have found the intrinsic factory");
         }
         try {
+            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
             Schema schema = schemaFactory.newSchema();
             //ValidatorHandler handler =schema.newValidatorHandler();
             Validator validator = schema.newValidator();
@@ -148,5 +153,18 @@ public abstract class BaseXMLValidationTest extends Assert{
     }
     
     abstract protected Map<String,String> getResourceMap();
+    
+    protected void handlerFeatureSetupCallback(FeaturePropertyProvider featuresAndProperties){
+        
+    }
+
+    private class ValidatorHandlerCallback implements ValidatorHandlerConstructionCallback{
+
+        @Override
+        public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
+            handlerFeatureSetupCallback(instrinsicValidatorHandlerProxy);
+        }
+        
+    }
     
 }

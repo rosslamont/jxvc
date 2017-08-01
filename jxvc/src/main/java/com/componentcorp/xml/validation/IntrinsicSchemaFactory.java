@@ -50,8 +50,10 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR, XMLConstants.W3C_XML_SCHEMA_NS_URI);}catch(SAXException ignore){}
         //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATION_DISABLED);
-        //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS);
+        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.WRITE_ONLY);
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS,false);} catch (SAXException ignore){}
         featuresAndProperties=fAndP;
     }
     

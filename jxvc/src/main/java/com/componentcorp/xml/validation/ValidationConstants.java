@@ -52,6 +52,12 @@ public interface ValidationConstants {
     public static final String PROPERTY_VALIDATION_DISABLED="http://com.componentcorp.xml.validator.ValidationConstants/property/validation-disabled";
     
     /**
+     * If this feature is set to true, the xml-model processor will ignore the group pseudo-attribute in all xml-model processing instructions.  In other words, 
+     * the xml-model processor will validate against all the schemas provided by xml-model processing instructions.  The default value is false for this feature.
+     */
+    public static final String FEATURE_IGNORE_XML_MODEL_GROUPS="http://com.componentcorp.xml.validator.ValidationConstants/feature/ignore-xml-model-groups";
+    
+    /**
      * Property which causes xml-model processing to only apply schema marked as belonging to the same named group.  Provide a String or Collection of Strings
      * to indicate active groups.  See...
      */

@@ -35,7 +35,7 @@ import org.xml.sax.XMLReader;
 public class SaxParserTest extends BaseXMLValidationTest {
     
     public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp/schema/jxvc/test/simpletest.rnc";
-    public static final String SIMPLE_ROOT_LOCATION="/simpletest.rnc";
+    public static final String SIMPLE_ROOT_LOCATION="/schema/simpletest.rnc";
     private static final Map<String,String> RESOURCE_LOCATIONS=new HashMap<String, String>();
     static{
         RESOURCE_LOCATIONS.put(SIMPLE_ROOT_SYSTEM_ID, SIMPLE_ROOT_LOCATION);

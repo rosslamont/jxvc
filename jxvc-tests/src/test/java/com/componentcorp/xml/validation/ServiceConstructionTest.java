@@ -55,7 +55,7 @@ public class ServiceConstructionTest extends TestCase {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
             CountingErrorHandler errorHandler=new CountingErrorHandler();
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/relaxNGSchema.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/relaxNGSchema.xml");
             assertEquals("Warning count is not zero",0,errorHandler.getWarningCount());
             assertEquals("Error count is not zero",0,errorHandler.getErrorCount());
             assertEquals("FatalError count is not zero",0,errorHandler.getFatalErrorCount());
@@ -85,7 +85,7 @@ public class ServiceConstructionTest extends TestCase {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/notASchema.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/notASchema.xml");
             Schema validationSchema = factory.newSchema(schemaUrl);
             assertEquals("Warning count is not zero",0,errorHandler.getWarningCount());
             assertEquals("Error count is not zero",0,errorHandler.getErrorCount());
@@ -115,8 +115,8 @@ public class ServiceConstructionTest extends TestCase {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/relaxNGSchema.xml");
-            URL instanceUrl =this.getClass().getResource("/notASchema.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/relaxNGSchema.xml");
+            URL instanceUrl =this.getClass().getResource("/schema/notASchema.xml");
             Schema validationSchema = factory.newSchema(schemaUrl);
             assertEquals("Warning count is not zero",0,errorHandler.getWarningCount());
             assertEquals("Error count is not zero",0,errorHandler.getErrorCount());
@@ -146,8 +146,8 @@ public class ServiceConstructionTest extends TestCase {
             SchemaFactory factory = SchemaFactory.newInstance(RELAXNG_COMPACT_URI);
             CountingErrorHandler errorHandler=new CountingErrorHandler();
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/simpletest.rnc");
-            URL instanceUrl =this.getClass().getResource("/simple.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/simpletest.rnc");
+            URL instanceUrl =this.getClass().getResource("/relaxNG/simple.xml");
             Schema validationSchema = factory.newSchema(schemaUrl);
             assertEquals("Warning count is not zero",0,errorHandler.getWarningCount());
             assertEquals("Error count is not zero",0,errorHandler.getErrorCount());
@@ -176,8 +176,8 @@ public class ServiceConstructionTest extends TestCase {
             SchemaFactory factory = SchemaFactory.newInstance(RELAXNG_COMPACT_URI);
             CountingErrorHandler errorHandler=new CountingErrorHandler();
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/relaxNGCompactSchema.rnc");
-            URL instanceUrl =this.getClass().getResource("/relaxNGSchema.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/relaxNGCompactSchema.rnc");
+            URL instanceUrl =this.getClass().getResource("/schema/relaxNGSchema.xml");
             Schema validationSchema = factory.newSchema(schemaUrl);
             Validator validator = validationSchema.newValidator();
             input=instanceUrl.openStream();
@@ -202,8 +202,8 @@ public class ServiceConstructionTest extends TestCase {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(RELAXNG_COMPACT_URI);
             factory.setErrorHandler(errorHandler);
-            URL schemaUrl=this.getClass().getResource("/relaxNGCompactSchema.rnc");
-            URL instanceUrl =this.getClass().getResource("/notASchema.xml");
+            URL schemaUrl=this.getClass().getResource("/schema/relaxNGCompactSchema.rnc");
+            URL instanceUrl =this.getClass().getResource("/schema/notASchema.xml");
             Schema validationSchema = factory.newSchema(schemaUrl);
             assertEquals("Warning count is not zero",0,errorHandler.getWarningCount());
             assertEquals("Error count is not zero",0,errorHandler.getErrorCount());

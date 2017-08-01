@@ -18,7 +18,9 @@ package com.componentcorp.xml.validation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -114,11 +116,11 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
     }
 
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-         ReadWriteable rw=supportedProperties.get(name);
+        ReadWriteable rw=supportedProperties.get(name);
         if (rw==null || rw==ReadWriteable.READ_ONLY){
             throw new SAXNotRecognizedException();
         }
-        propertyMap.put(name, object);
+        setReadOnlyProperty(name, object);//call this so we can centralised some group handling
     }
 
     @Override
@@ -132,9 +134,22 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
 
     @Override
     public void setReadOnlyProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-         ReadWriteable rw=supportedProperties.get(name);
+        ReadWriteable rw=supportedProperties.get(name);
         if (rw==null ){
             throw new SAXNotRecognizedException();
+        }
+        if (ValidationConstants.PROPERTY_XML_MODEL_GROUPS.equals(name)&& object!=null){
+            Set<String> groupSet=new HashSet<String>();
+            if (object instanceof Collection){
+                groupSet.addAll((Collection<? extends String>) object);
+            }
+            else if (object instanceof String){
+                groupSet.add((String) object);
+            }
+            else {
+                throw new SAXNotSupportedException("Property "+ValidationConstants.PROPERTY_XML_MODEL_GROUPS+ " only supports strings or collections of strings");
+            }
+            object = Collections.unmodifiableSet(groupSet);
         }
         propertyMap.put(name, object);
     }
