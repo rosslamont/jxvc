@@ -29,10 +29,8 @@ import org.xml.sax.SAXNotSupportedException;
  *
  * @author rlamont
  */
-class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
+class FeaturePropertyProviderImpl extends UncheckedFeaturePropertyProviderImpl implements FeaturePropertyProviderInternal{
     
-    private  final Map<String,Boolean> featureMap=new HashMap<String, Boolean>();
-    private  final Map<String,Object> propertyMap=new HashMap<String, Object>();
     private  final Map<String,ReadWriteable> supportedFeatures=new HashMap<String,ReadWriteable>();
     private  final Map<String,ReadWriteable>  supportedProperties=new HashMap<String,ReadWriteable>();
     private final Map<String,ReadWriteable> unmodifiableSupportedFeatures = Collections.unmodifiableMap(supportedFeatures);
@@ -57,13 +55,13 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         }
         for (String feature:copy.getSupportedFeatures()){
             try{
-                featureMap.put(feature, copy.getFeature(feature));
+                super.setFeature(feature, copy.getFeature(feature));
             }
             catch (SAXException ignore){}
         }
         for (String property:copy.getSupportedProperties()){
             try{
-                propertyMap.put(property, copy.getProperty(property));
+                super.setProperty(property, copy.getProperty(property));
             }
             catch (SAXException ignore){}
         }
@@ -92,11 +90,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null || rw==ReadWriteable.WRITE_ONLY){
             throw new SAXNotRecognizedException();
         }
-        Boolean b= featureMap.get(name);
-        if (b==null){
-            return false;
-        }
-        return b;
+        return super.getFeature(name);
     }
 
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -104,7 +98,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null || rw==ReadWriteable.WRITE_ONLY){
             throw new SAXNotRecognizedException();
         }
-        return propertyMap.get(name);
+        return super.getProperty(name);
     }
 
     public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -112,7 +106,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null || rw==ReadWriteable.READ_ONLY){
             throw new SAXNotRecognizedException();
         }
-        featureMap.put(name, value);
+        setReadOnlyFeature(name, value);
     }
 
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -129,7 +123,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null ){
             throw new SAXNotRecognizedException();
         }
-        featureMap.put(name, value);
+        super.setFeature(name, value);
     }
 
     @Override
@@ -151,7 +145,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
             }
             object = Collections.unmodifiableSet(groupSet);
         }
-        propertyMap.put(name, object);
+        super.setProperty(name, object);
     }
 
     @Override
@@ -160,7 +154,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null){
             throw new SAXNotRecognizedException();
         }
-        return propertyMap.get(name);
+        return super.getProperty(name);
     }
 
     @Override
@@ -169,11 +163,7 @@ class FeaturePropertyProviderImpl implements FeaturePropertyProviderInternal {
         if (rw==null ){
             throw new SAXNotRecognizedException();
         }
-        Boolean b= featureMap.get(name);
-        if (b==null){
-            return false;
-        }
-        return b;
+        return super.getFeature(name);
     }
     
     

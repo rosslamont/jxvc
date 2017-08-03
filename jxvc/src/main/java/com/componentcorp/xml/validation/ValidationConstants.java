@@ -115,6 +115,22 @@ public interface ValidationConstants {
      * 
      * Note that JAXP style {@link org.xml.sax.ext.DeclHandler}s can not be made to work with DocumentBuilder at this time.
      */
-    public static String PROPERTY_DECLARATION_HANDLER="http://xml.org/sax/properties/declaration-handler";
+    public static final  String PROPERTY_DECLARATION_HANDLER="http://xml.org/sax/properties/declaration-handler";
     
+    public static final String PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES="http://com.componentcorp.xml.validator.ValidationConstants/property/subordinate-features-and-properties";
+
+    public static final String SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME="http://com.componentcorp.xml.validator.ValidationConstants/subordinate/property/subordinate-phase-property-name";
+    
+    public static final String SUBORDINATE_PROPERTY_PHASE_OVERRIDE="http://com.componentcorp.xml.validator.ValidationConstants/subordinate/property/subordinate-phase-override";
+
+    public static final String PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP="http://com.componentcorp.xml.validator.ValidationConstants/property/mime-type-to-schematypens-map";
+
+    public static final String FEATURE_TREAT_INVALID_SUBORDINATE_FEATURES_AS_ERRORS="http://com.componentcorp.xml.validator.ValidationConstants/feature/treat-invalid-subordinate-features-as-errors";
+
+    public static final String DTD_MIME_TYPE="application/xml-dtd";
+    public static final String RELAX_NG_COMPACT_MIME_TYPE="application/relax-ng-compact-syntax";
+    public static final String DTD_SCHEMA_TYPE="[dtd]";
+    public static final String RELAX_NG_COMPACT_SCHEMA_TYPE="http://www.iana.org/assignments/media-types/application/relax-ng-compact-syntax";
+    public static final String SCHEMATRON_SCHEMA_TYPE="http://purl.oclc.org/dsdl/schematron";
+    public static final String NVDL_SCHEMA_TYPE="http://purl.oclc.org/dsdl/nvdl/ns/structure/1.0";
 }

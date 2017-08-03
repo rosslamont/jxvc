@@ -52,13 +52,10 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         try{
             Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
             assertEquals("Should have been no validation errors",0,faults.size());
-        } catch (SAXNotSupportedException ex) {
+        } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an exception");
-        } catch (SAXNotRecognizedException ex) {
-            ex.printStackTrace();
-            fail("Should not have thrown an exception");
-        }
+        } 
     }
     
     
@@ -74,13 +71,10 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         final int FAIL_COL_NO=16;
         assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
         assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
-        } catch (SAXNotSupportedException ex) {
+        } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an exception");
-        } catch (SAXNotRecognizedException ex) {
-            ex.printStackTrace();
-            fail("Should not have thrown an exception");
-        }
+        } 
     }
     
     @Test
@@ -162,13 +156,10 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         try{
             Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xsi/simpleRoot.xml");
             assertEquals("Should have been no validation errors",0,faults.size());
-        } catch (SAXNotSupportedException ex) {
+        } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an exception");
-        } catch (SAXNotRecognizedException ex) {
-            ex.printStackTrace();
-            fail("Should not have thrown an exception");
-        }
+        } 
     }
     
     
@@ -184,13 +175,10 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
             final int FAIL_COL_NO=16;
             assertEquals("Wrong exception - wrong line no",FAIL_LINE_NO,spe.getLineNumber());
             assertEquals("Wrong exception - wrong column no",FAIL_COL_NO,spe.getColumnNumber());
-        } catch (SAXNotSupportedException ex) {
+        } catch (SAXException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an exception");
-        } catch (SAXNotRecognizedException ex) {
-            ex.printStackTrace();
-            fail("Should not have thrown an exception");
-        }
+        } 
     }
 
     @Override

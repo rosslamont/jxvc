@@ -50,7 +50,8 @@ public abstract class BaseXMLValidationTest extends Assert{
     protected Collection<SAXParseException> performDOMValidatorTest(String testFile,Map<String,Boolean> features,Map<String,Object> properties) throws SAXNotSupportedException, SAXNotRecognizedException {
         final TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
-        applyFeaturesAndProperties(schemaFactory, features, properties);
+        schemaFactoryCreationCallback(schemaFactory);
+          applyFeaturesAndProperties(schemaFactory, features, properties);
         if (schemaFactory == null) {
             fail("Should have found the intrinsic factory");
         }
@@ -75,7 +76,7 @@ public abstract class BaseXMLValidationTest extends Assert{
         return contentHandler.getFaults();
     }
 
-    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile) throws SAXNotSupportedException, SAXNotRecognizedException {
+    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile) throws SAXException {
         return this.performSAXValidatorHandlerTest(testFile,  EMPTY_FEATURES, EMPTY_PROPERTIES);
     
     }
@@ -94,9 +95,10 @@ public abstract class BaseXMLValidationTest extends Assert{
         }
     }
     
-    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,Map<String,Boolean> features, Map<String,Object> properties) throws SAXNotSupportedException, SAXNotRecognizedException {
+    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,Map<String,Boolean> features, Map<String,Object> properties) throws SAXException {
         TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
+        schemaFactoryCreationCallback(schemaFactory);
         applyFeaturesAndProperties(schemaFactory, features, properties);
         if (schemaFactory == null) {
             fail("Should have found the intrinsic factory");
@@ -113,9 +115,6 @@ public abstract class BaseXMLValidationTest extends Assert{
 //            parser.getXMLReader().setProperty("http://xml.org/sax/properties/declaration-handler", contentHandler);
             InputStream is = getClass().getResourceAsStream(testFile);
             parser.parse(is, contentHandler);
-        } catch (SAXException ex) {
-            ex.printStackTrace();
-            fail("Should not have thrown an SAXException creating schema");
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
             fail("Should not have thrown an ParserConfigurationException creating schema");
@@ -129,6 +128,7 @@ public abstract class BaseXMLValidationTest extends Assert{
     protected Collection<SAXParseException> performSAXValidatorTest(String testFile) throws SAXException {
         final TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
+        schemaFactoryCreationCallback(schemaFactory);
         if (schemaFactory == null) {
             fail("Should have found the intrinsic factory");
         }
@@ -155,6 +155,10 @@ public abstract class BaseXMLValidationTest extends Assert{
     abstract protected Map<String,String> getResourceMap();
     
     protected void handlerFeatureSetupCallback(FeaturePropertyProvider featuresAndProperties){
+        
+    }
+    
+    protected void schemaFactoryCreationCallback(SchemaFactory factory){
         
     }
 

@@ -26,6 +26,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.BiFunction;
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -62,7 +65,6 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
     private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
-    private final Map<String,ValidatorHandlerProxy> discoveredValidatorsForFeaturesMap=new HashMap<String, ValidatorHandlerProxy>();
     private final Map<String,Sax2DefaultHandlerWrapper> validatorCache=new WeakHashMap<String, Sax2DefaultHandlerWrapper>();
     private final List<Sax2DefaultHandlerWrapper> currentOrderedValidators=new ArrayList<Sax2DefaultHandlerWrapper>();
     private boolean firstElementPassed=false;
@@ -72,16 +74,19 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     private final FeaturePropertyProviderInternal featuresAndProperties;
     private ContentHandler firstContentHandler=null;
     private DeclHandler firstDeclHandler=null;
-    
-    
-    
     private static final String  XML_MODEL="xml-model";
+    
     
     
     IntrinsicValidatorHandler(FeaturePropertyProviderInternal factory){
         featuresAndProperties=factory;
         featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER, FeaturePropertyProviderInternal.ReadWriteable.READ_ONLY);
         featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES,FeaturePropertyProviderInternal.ReadWriteable.READ_ONLY);
+        try{
+            featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES, new SubordinateFeaturesAndProperties());
+        } catch (SAXException ignore){}
+        
     }
 
     @Override
@@ -366,9 +371,6 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     
 
     void reset() {
-        for (ValidatorHandlerProxy proxy:discoveredValidatorsForFeaturesMap.values()){
-            proxy.clear();
-        }
         firstElementPassed=false;
         deferredActions.clear();
 //        foundNamespaces.clear();
@@ -406,6 +408,35 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             Charset checkCharset=Charset.forName(charset);
             if (checkCharset==null){
                 throw new SAXParseException(charset+" is not a known charset in xml-model processing instruction", locator);
+            }
+        }
+        if (schematypens ==null){
+            if (type==null){
+                //attempt to convert extension of href into type.
+                if (href.endsWith(".dtd")){
+                    type = ValidationConstants.DTD_MIME_TYPE;
+                }
+                else if (href.endsWith(".xsd")){
+                    schematypens = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+                }
+                else if (href.endsWith(".rng")){
+                    schematypens = XMLConstants.RELAXNG_NS_URI;
+                }
+                else if (href.endsWith(".rnc")){
+                    type = ValidationConstants.RELAX_NG_COMPACT_MIME_TYPE;
+                }
+                else if (href.endsWith(".sch")){
+                    schematypens = ValidationConstants.SCHEMATRON_SCHEMA_TYPE;
+                }
+                else if (href.endsWith(".nvdl")){
+                    schematypens=ValidationConstants.NVDL_SCHEMA_TYPE;
+                }
+            }
+            if (type!=null){
+                Map<String,String> typeToSchemaTypeNSMap = (Map<String,String>) getProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP);
+                if (typeToSchemaTypeNSMap!=null){
+                    schematypens=typeToSchemaTypeNSMap.get(type);
+                }
             }
         }
         if (!getFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS)){
@@ -466,16 +497,14 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
                     inputSource.setPublicId(input.getPublicId());
                     inputSource.setEncoding(charset);
                     wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource,true);
-                    validatorCache.put(href,wrapper);
+                    validatorCache.put(new String(href),wrapper);
                 }
             }
         }
         if (wrapper ==null){
             throw new SAXParseException("Could not load validation source", locator);
         }
-        if (wrapper!=null){
-            addNewValidator(wrapper);
-        }
+        addNewValidator(wrapper,schematypens,phase);
     }
 
     private void performDeferredActions() throws SAXException {
@@ -527,14 +556,14 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
                     Schema schema = schemaFactory.newSchema();
                     InputSource inputSource = new InputSource();
                     wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource,true);
-                    validatorCache.put(defaultValidatorUri,wrapper);
+                    validatorCache.put(new String(defaultValidatorUri),wrapper);    //need an explicit string copy so that the WeakHashMap works
                 }
                 catch(UnsupportedOperationException uoe){
                     lateThrow = new SAXNotSupportedException("The chosen default SchemaFactory does not support zero argument newSchema()");
                 }
             }
             if (wrapper !=null){
-                addNewValidator(wrapper);
+                addNewValidator(wrapper,defaultValidatorUri,null);
             }
             
         }
@@ -566,10 +595,40 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         }
     }
     
-    private void addNewValidator(Sax2DefaultHandlerWrapper wrapper)
+    private void addNewValidator(Sax2DefaultHandlerWrapper wrapper,String schemaLanguage,String phase) throws SAXException
     {
-                currentOrderedValidators.add(wrapper);
-                //TODO: Tie in the ValidatorHandlerProxy
+        currentOrderedValidators.add(wrapper);
+        SubordinateFeaturesAndProperties subFeaturesAndProperties = (SubordinateFeaturesAndProperties) getProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES);
+        if (subFeaturesAndProperties==null){//Should never be
+            return;
+        }
+        SubordinateHandlerFeaturesAndProperties languageLevelFAndP = (SubordinateHandlerFeaturesAndProperties) subFeaturesAndProperties.get(schemaLanguage);
+        String isName = wrapper.getInputSource().getSystemId();
+        if (isName==null){
+            isName=wrapper.getInputSource().getPublicId();
+        }
+        boolean treatAsError = getFeature(ValidationConstants.FEATURE_TREAT_INVALID_SUBORDINATE_FEATURES_AS_ERRORS);
+        languageLevelFAndP.applyFeaturesAndProperties(wrapper, errorHandler, treatAsError);
+        SubordinateHandlerFeaturesAndProperties schemaLevelFAndP = (SubordinateHandlerFeaturesAndProperties) (isName==null?null:subFeaturesAndProperties.get(isName));
+        if (schemaLevelFAndP !=null){
+            schemaLevelFAndP.unbind();
+            schemaLevelFAndP.bindHandler(wrapper, errorHandler, treatAsError);
+        }
+        String phaseProperty =null;
+        if (schemaLevelFAndP!=null){
+            phaseProperty=(String) schemaLevelFAndP.getProperty(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME);
+        }
+        if (phaseProperty==null ){
+            phaseProperty=(String) languageLevelFAndP.getProperty(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME);
+        }
+        if (phaseProperty!=null){
+            FeaturePropertyProvider phaseReceiver = schemaLevelFAndP!=null?schemaLevelFAndP:wrapper;
+            String phaseOverride=(String) (schemaLevelFAndP==null?null:schemaLevelFAndP.getProperty(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_OVERRIDE));
+            if (phaseOverride!=null){
+                phase=phaseOverride;
+            }
+            phaseReceiver.setProperty(phaseProperty, phase);
+        }
     }
 
     //DeclHandler methods
@@ -694,200 +753,56 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         }
     }
 
-    
-    /**
-     * Proxy which wraps a collection of ValidatorHandlers for a particular
-     * type of validator, principally so that a client of the API can 
-     * apply type specific properties and features to that type of 
-     * ValidatorHandler.
-     */
-    private final class ValidatorHandlerProxy extends ValidatorHandler{
+    private class SubordinateFeaturesAndProperties extends HashMap<String,FeaturePropertyProvider>{
 
-        //TODO - consider whether more agressive retention of the wrapped handler should take
-        //place.
-        //TODO - potentially multiple schema documents could be validated for the one type of 
-        //validator.
-        
-        private final Collection<WeakReference<Sax2DefaultHandlerWrapper>> wrappedCollection=new ArrayList<WeakReference<Sax2DefaultHandlerWrapper>>();
-        private final ReferenceQueue<Sax2DefaultHandlerWrapper> wrappedRefQueue=new ReferenceQueue<Sax2DefaultHandlerWrapper>();
-        private final Map<String,Boolean> deferredFeatures=new HashMap<String, Boolean>();
-        private final Map<String,Object> deferredProperties=new HashMap<String, Object>();
-
-        public ValidatorHandlerProxy() {
+        public SubordinateFeaturesAndProperties() {
         }
 
-        public ValidatorHandlerProxy(Sax2DefaultHandlerWrapper wrapped) {
-            this.wrappedCollection .add(new WeakReference<Sax2DefaultHandlerWrapper>(wrapped,wrappedRefQueue));
+        @Override
+        public void replaceAll(BiFunction<? super String, ? super FeaturePropertyProvider, ? extends FeaturePropertyProvider> function) {
+            throw new UnsupportedOperationException();
         }
-        
-        
-        void wrapHandler(Sax2DefaultHandlerWrapper handler){
-            if (wrappedCollection!=null){
-                throw new IllegalStateException("This proxy already has a delegate.");
+
+        @Override
+        public FeaturePropertyProvider merge(String key, FeaturePropertyProvider value, BiFunction<? super FeaturePropertyProvider, ? super FeaturePropertyProvider, ? extends FeaturePropertyProvider> remappingFunction) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FeaturePropertyProvider replace(String key, FeaturePropertyProvider value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean replace(String key, FeaturePropertyProvider oldValue, FeaturePropertyProvider newValue) {
+            throw new UnsupportedOperationException();
+        }
+
+
+        @Override
+        public void putAll(Map<? extends String, ? extends FeaturePropertyProvider> m) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FeaturePropertyProvider put(String key, FeaturePropertyProvider value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FeaturePropertyProvider get(Object key) {
+            FeaturePropertyProvider ret= super.get(key); 
+            if (ret == null){
+                Sax2DefaultHandlerWrapper wrapper = validatorCache.get(key);
+                ret = new SubordinateHandlerFeaturesAndProperties(wrapper);
+                super.put(key.toString(),ret);
             }
-            this.wrappedCollection .add(new WeakReference<Sax2DefaultHandlerWrapper>(handler,wrappedRefQueue));;
-            
+            return ret;
         }
-        
-        private boolean isWrapping(){
-            return wrappedCollection!=null;
-        }
-        
-        private void clear(){
-            wrappedCollection.clear();
-        }
-        
-        @Override
-        public void setContentHandler(ContentHandler receiver) {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public ContentHandler getContentHandler() {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public void setErrorHandler(ErrorHandler errorHandler) {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public ErrorHandler getErrorHandler() {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used.");
-        }
-
-        @Override
-        public void setResourceResolver(LSResourceResolver resourceResolver) {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public LSResourceResolver getResourceResolver() {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public TypeInfoProvider getTypeInfoProvider() {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void setDocumentLocator(Locator locator) {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void startDocument() throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void endDocument() throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void startPrefixMapping(String prefix, String uri) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void endPrefixMapping(String prefix) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void processingInstruction(String target, String data) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        public void skippedEntity(String name) throws SAXException {
-            throw new UnsupportedOperationException("This ValidatorHandler cannot be directly used."); 
-        }
-
-        @Override
-        public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-            Iterator<WeakReference<Sax2DefaultHandlerWrapper>> iterator = wrappedCollection.iterator();
-            while(iterator.hasNext()){
-                WeakReference<Sax2DefaultHandlerWrapper> ref = iterator.next();
-                if (ref!=null){
-                    Sax2DefaultHandlerWrapper handler=ref.get();
-                    if (handler!=null){
-                        return handler.getAsValidatorHandler().getProperty(name);
-                    }
-                }
-            }
-            Object o = deferredProperties.get(name);
-            if (o==null){
-                throw new SAXNotSupportedException("The proxy has not been initialised and no value has yet been set for this property");
-            }
-            return o;
-        }
-
-        @Override
-        public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-            Iterator<WeakReference<Sax2DefaultHandlerWrapper>> iterator = wrappedCollection.iterator();
-            while(iterator.hasNext()){
-                WeakReference<Sax2DefaultHandlerWrapper> ref = iterator.next();
-                if (ref!=null){
-                    Sax2DefaultHandlerWrapper handler=ref.get();
-                    if (handler!=null){
-                        handler.getAsValidatorHandler().setProperty(name, object); //may throw an exception if not appropriate
-                    }
-                }
-            
-            }
-            deferredProperties.put(name, object);
-        }
-
-        @Override
-        public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-            Iterator<WeakReference<Sax2DefaultHandlerWrapper>> iterator = wrappedCollection.iterator();
-            while(iterator.hasNext()){
-                WeakReference<Sax2DefaultHandlerWrapper> ref = iterator.next();
-                if (ref!=null){
-                    Sax2DefaultHandlerWrapper handler=ref.get();
-                    if (handler!=null){
-                        handler.getAsValidatorHandler().setFeature(name, value); //may throw an exception if not appropriate
-                    }
-                }
-            }
-            deferredFeatures.put(name, value);
-        }
-
-        @Override
-        public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-            Iterator<WeakReference<Sax2DefaultHandlerWrapper>> iterator = wrappedCollection.iterator();
-            while(iterator.hasNext()){
-                WeakReference<Sax2DefaultHandlerWrapper> ref = iterator.next();
-                if (ref!=null){
-                    Sax2DefaultHandlerWrapper handler=ref.get();
-                    if (handler!=null){
-                        return handler.getAsValidatorHandler().getFeature(name);
-                    }
-                }
-            }
-            Boolean b = deferredFeatures.get(name);
-            if (b==null){
-                throw new SAXNotSupportedException("The proxy has not been initialised and no value has yet been set for this feature");
-            }
-            return b;
-        }
-        
         
         
     }
+
     
     /**
      * Ideally a lambda, but I guess we have to have at least java 6 support
@@ -907,7 +822,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
      * <i>Note:</i>Could probably become a package class
      * 
      */
-    private final class Sax2DefaultHandlerWrapper implements ContentHandler,ErrorHandler,DeclHandler{
+    private final class Sax2DefaultHandlerWrapper implements ContentHandler,ErrorHandler,DeclHandler,FeaturePropertyProvider{
         private final ContentHandler asContentHandler;
         private final DeclHandler asDeclHandler;
         private ErrorHandler errorHandler;
@@ -1060,6 +975,42 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
                 asDeclHandler.externalEntityDecl(name, publicId, systemId);
             }
         }
+
+        @Override
+        public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+            if (asValidatorHandler!=null){
+                return asValidatorHandler.getFeature(name);
+            }
+            throw new SAXNotSupportedException();
+        }
+
+        @Override
+        public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+            if (asValidatorHandler!=null){
+                return asValidatorHandler.getProperty(name);
+            }
+            throw new SAXNotSupportedException();
+        }
+
+        @Override
+        public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+            if (asValidatorHandler!=null){
+                asValidatorHandler.setFeature(name, value);
+            }
+            else{
+                throw new SAXNotSupportedException();
+            }
+        }
+
+        @Override
+        public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+            if (asValidatorHandler!=null){
+                asValidatorHandler.setProperty(name, object);
+            }
+            else{
+                throw new SAXNotSupportedException();
+            }
+        }
         
         
     }
@@ -1086,5 +1037,103 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             IntrinsicValidatorHandler.this.externalEntityDecl(name, publicId, systemId);
         }
 
+    }
+    
+    private class SubordinateHandlerFeaturesAndProperties extends UncheckedFeaturePropertyProviderImpl{
+        private WeakReference<FeaturePropertyProvider> wrappedHandler;
+
+        public SubordinateHandlerFeaturesAndProperties() {
+        }
+
+        public SubordinateHandlerFeaturesAndProperties(FeaturePropertyProvider wrappedHandler) {
+            this.wrappedHandler=new WeakReference(wrappedHandler);
+        }
+        
+        void bindHandler(FeaturePropertyProvider handler, ErrorHandler errorHandler,boolean reportAsError) throws SAXException{
+            wrappedHandler=new WeakReference(handler);
+            applyFeaturesAndProperties(handler,errorHandler,reportAsError);
+        }
+        
+        private void unbind() {
+            wrappedHandler=null;
+        }
+
+        void applyFeaturesAndProperties(FeaturePropertyProvider handler, ErrorHandler errorHandler, boolean reportAsError) throws SAXException{
+            for (String key: getSupportedFeatures()){
+                try{
+                    handler.setFeature(key, getFeature(key));
+                } catch (SAXNotRecognizedException ex) {
+                    reportException("SAXNotRecognizedException thrown when attempting to set a deferred feature",ex,errorHandler,reportAsError);
+                } catch (SAXNotSupportedException ex) {
+                    reportException("SAXNotSupportedException thrown when attempting to set a deferred feature",ex,errorHandler,reportAsError);
+                }
+            }
+            for (String key: getSupportedProperties()){
+                if (!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME.equals(key)&&!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_OVERRIDE.equals(key)){
+                    try{
+                        handler.setProperty(key, getProperty(key));
+                    } catch (SAXNotRecognizedException ex) {
+                        reportException("SAXNotRecognizedException thrown when attempting to set a deferred property",ex,errorHandler,reportAsError);
+                    } catch (SAXNotSupportedException ex) {
+                        reportException("SAXNotSupportedException thrown when attempting to set a deferred property",ex,errorHandler,reportAsError);
+                    }
+                }
+            }
+        }
+        final FeaturePropertyProvider getHandler(){
+            
+            FeaturePropertyProvider handler=wrappedHandler!=null?wrappedHandler.get():null;
+            if (handler==null){
+                wrappedHandler=null;
+            }
+            return handler;
+        }
+        @Override
+        public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+            FeaturePropertyProvider handler=getHandler();
+            if (handler!=null&&!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME.equals(name)&&!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_OVERRIDE.equals(name)){
+                handler.setProperty(name, object);
+            }
+            super.setProperty(name, object); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+            FeaturePropertyProvider handler=getHandler();
+            if (handler!=null){
+                handler.setProperty(name, value);
+            }
+            super.setFeature(name, value); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+            FeaturePropertyProvider handler=null;
+            if (!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME.equals(name)&&!ValidationConstants.SUBORDINATE_PROPERTY_PHASE_OVERRIDE.equals(name)){
+                handler=getHandler();
+            }
+            return handler==null?super.getProperty(name):handler.getProperty(name); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+            FeaturePropertyProvider handler=getHandler();
+            return handler==null?super.getFeature(name):handler.getFeature(name); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        private void reportException(String message,SAXException ex, ErrorHandler errorHandler,boolean reportAsError) throws SAXException {
+            SAXParseException exception= new SAXParseException(message, locator);
+            exception.initCause(ex);
+            if (reportAsError){
+                errorHandler.error(exception);
+            }
+            else{
+                errorHandler.warning(exception);
+            }
+        }
+
+
+        
+        
     }
 }

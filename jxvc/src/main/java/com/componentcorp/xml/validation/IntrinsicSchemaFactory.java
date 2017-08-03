@@ -18,6 +18,9 @@ package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
@@ -42,6 +45,18 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
     private ErrorHandler errorHandler=null;
     private LSResourceResolver resourceResolver=null;
     private final FeaturePropertyProviderInternal featuresAndProperties;
+    
+    
+    
+    private static final Map<String,String> defaultMimeTypeToSchemaTypeNSMap;
+    static{
+        Map<String,String> map = new HashMap();
+        map.put(ValidationConstants.DTD_MIME_TYPE, ValidationConstants.DTD_SCHEMA_TYPE);
+        map.put(ValidationConstants.RELAX_NG_COMPACT_MIME_TYPE, ValidationConstants.RELAX_NG_COMPACT_SCHEMA_TYPE);
+        
+        defaultMimeTypeToSchemaTypeNSMap=Collections.unmodifiableMap(map);
+    }
+    
 
     public IntrinsicSchemaFactory() {
         FeaturePropertyProviderImpl fAndP=new FeaturePropertyProviderImpl();
@@ -54,6 +69,9 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.WRITE_ONLY);
         fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS,false);} catch (SAXException ignore){}
+        fAndP.addAllowedProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try{fAndP.setProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP,defaultMimeTypeToSchemaTypeNSMap);}catch(SAXException ignore){}
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_TREAT_INVALID_SUBORDINATE_FEATURES_AS_ERRORS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         featuresAndProperties=fAndP;
     }
     
