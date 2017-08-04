@@ -10,7 +10,12 @@
         <relativePath>../</relativePath>
     </parent>
     <name>XML Schema Association and Validation</name>
-
+    <description> 
+    ISO/IEC 19757-11:2011 xml-model compliant validator, capable of identifying
+        subordinate validation from xml-model processing instructions in an 
+        xml-document.
+    </description>
+    
     <dependencies>
         <dependency>
             <groupId>com.componentcorp.xml.validation</groupId>

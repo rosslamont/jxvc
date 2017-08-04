@@ -8,6 +8,9 @@
     </parent>
     <artifactId>relaxng-compact</artifactId>
     <name>RelaxNG-Compact Validator Service</name>
+    <description>
+        Very simple library which exposes the Jing RelaxNG Compact syntax library as a java service.
+    </description>
     <packaging>jar</packaging>
     <dependencies>
       <dependency>

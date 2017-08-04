@@ -64,11 +64,11 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
         try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_MISSING_VALIDATION_LIB,false);} catch (SAXException ignore){}
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR, XMLConstants.W3C_XML_SCHEMA_NS_URI);}catch(SAXException ignore){}
-        //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATION_DISABLED);
+        //fAndP.addAllowedProperty(ValidationConstants.PROPERTY_DISABLED_SUBORDINATE_VALIDATORS);
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.WRITE_ONLY);
-        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
-        try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS,false);} catch (SAXException ignore){}
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_IGNORE_ALL_XML_MODEL_GROUPS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try{fAndP.setFeature(ValidationConstants.FEATURE_IGNORE_ALL_XML_MODEL_GROUPS,false);} catch (SAXException ignore){}
         fAndP.addAllowedProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         try{fAndP.setProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP,defaultMimeTypeToSchemaTypeNSMap);}catch(SAXException ignore){}
         fAndP.addAllowedFeature(ValidationConstants.FEATURE_TREAT_INVALID_SUBORDINATE_FEATURES_AS_ERRORS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);

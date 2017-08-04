@@ -16,11 +16,22 @@
 package com.componentcorp.xml.validation.base;
 
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 
 /**
- * Callback interface to be notified upon construction of an IntrinsicValidatorHandler
+ * Callback interface to be notified upon construction of a ValidatorHandler.
+ * 
+ * As construction of ValidatorHandlers during SAX and DOM parsing is opaque, 
+ * it becomes impossible to set features and properties on those ValidatorHandlers.
+ * 
+ * {@link SchemaFactory} providers are encouraged to provide a means of setting 
+ * this callback (typically as a property).  The callback is typically called by
+ * a {@link Schema} after it has instantiated a {@link ValidatorHandler}.
  * @author rlamont
  */
 public interface ValidatorHandlerConstructionCallback {
+    
     void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy);
 }

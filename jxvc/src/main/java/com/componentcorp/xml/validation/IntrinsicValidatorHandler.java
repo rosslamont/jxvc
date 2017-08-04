@@ -64,7 +64,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     private Sax2DefaultHandlerWrapper contentHandler=new Sax2DefaultHandlerWrapper(null, null,false);
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
-    private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
+//    private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
     private final Map<String,Sax2DefaultHandlerWrapper> validatorCache=new WeakHashMap<String, Sax2DefaultHandlerWrapper>();
     private final List<Sax2DefaultHandlerWrapper> currentOrderedValidators=new ArrayList<Sax2DefaultHandlerWrapper>();
     private boolean firstElementPassed=false;
@@ -86,8 +86,6 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         try{
             featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES, new SubordinateFeaturesAndProperties());
         } catch (SAXException ignore){}
-        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
-        try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
         
     }
 
@@ -441,7 +439,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
                 }
             }
         }
-        if (!getFeature(ValidationConstants.FEATURE_IGNORE_XML_MODEL_GROUPS)){
+        if (!getFeature(ValidationConstants.FEATURE_IGNORE_ALL_XML_MODEL_GROUPS)){
             Set<String> groups = (Set<String>) getProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS);
             if (groups==null && group!=null && !group.isEmpty()){
                 return;

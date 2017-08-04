@@ -16,21 +16,37 @@
 package com.componentcorp.xml.validation.base;
 
 import java.util.Collection;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import javax.xml.validation.ValidatorHandler;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 /**
- *
+ * Abstraction of feature and property capabilities found in {@link SchemaFactory},
+ * {@link Validator} and {@link ValidatorHandler}.  
  * @author rlamont
  */
 public interface FeaturePropertyProvider {
 
+    /**
+     * @see SchemaFactory#getFeature(java.lang.String) 
+     */
     boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 
+    /**
+     * @see SchemaFactory#getProperty(java.lang.String) 
+     */
     <T> T getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 
+    /**
+     * @see SchemaFactory#setFeature(java.lang.String, boolean) 
+     */
     void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException;
 
+    /**
+     * @see SchemaFactory#setProperty(java.lang.String, java.lang.Object) 
+     */
     void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException;
     
 }

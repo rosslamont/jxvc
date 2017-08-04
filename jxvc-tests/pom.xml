@@ -11,6 +11,11 @@
     <artifactId>jxvc-tests</artifactId>
     <packaging>jar</packaging>
     <name>Java XML Validation Collection Tests</name>
+    <description>
+       
+       Integration tests which make various subordinate validators available to the Intrinsic
+        Validator.
+    </description>
     <dependencies>
         <dependency>
             <groupId>com.componentcorp.xml.validation</groupId>
@@ -55,5 +60,4 @@
         </dependency>
         
     </dependencies>
-    <description>Tests of the validators.  Mostly these have been cut out so that the dependencies can be tied in via late binding.</description>
 </project>

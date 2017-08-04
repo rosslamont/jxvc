@@ -62,6 +62,8 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
 
     IntrinsicValidator(IntrinsicSchemaFactory parent,FeaturePropertyProviderInternal featuresAndProperties) {
         this.featuresAndProperties=featuresAndProperties;
+        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
         featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.UNSUPPORTED);
         try{featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, null);} catch(SAXException ignore){}
         this.parent=parent;
