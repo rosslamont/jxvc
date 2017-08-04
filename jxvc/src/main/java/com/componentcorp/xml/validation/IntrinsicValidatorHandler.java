@@ -86,6 +86,8 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         try{
             featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES, new SubordinateFeaturesAndProperties());
         } catch (SAXException ignore){}
+        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
         
     }
 

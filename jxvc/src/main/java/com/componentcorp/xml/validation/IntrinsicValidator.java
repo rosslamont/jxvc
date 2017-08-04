@@ -31,7 +31,9 @@ import javax.xml.transform.stax.StAXResult;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
+import javax.xml.validation.ValidatorHandler;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
@@ -55,12 +57,15 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
     private LSResourceResolver resourceResolver;
     private final FeaturePropertyProviderInternal featuresAndProperties;
     private final IntrinsicSchemaFactory parent;
+    private final IntrinsicValidatorHandler validatorHandler;
+    private final FakeIntrinsicSchema schema = new FakeIntrinsicSchema();
 
     IntrinsicValidator(IntrinsicSchemaFactory parent,FeaturePropertyProviderInternal featuresAndProperties) {
         this.featuresAndProperties=featuresAndProperties;
+        featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.UNSUPPORTED);
+        try{featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, null);} catch(SAXException ignore){}
         this.parent=parent;
-        this.featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE,FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
-        try {this.featuresAndProperties.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true);} catch (SAXException ignore){}
+        validatorHandler=new IntrinsicValidatorHandler(featuresAndProperties);
     }
 
     @Override
@@ -100,7 +105,7 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
             }
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
             parserFactory.setNamespaceAware(featuresAndProperties.getFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE));
-            IntrinsicSchema schema = new IntrinsicSchema(parent, featuresAndProperties);
+            
             
             parserFactory.setSchema(schema);
             //ValidatorHandler intrinsicValidator = schema.newValidatorHandler();
@@ -156,15 +161,23 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
 
     @Override
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+        //we share features with our validator handler, but we reject certain things not appropriate for a simple
+        //validator
+        filterUnwantedProperties(name);
         return featuresAndProperties.getProperty(name);
     }
 
     @Override
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+        filterUnwantedProperties(name);
         featuresAndProperties.setProperty(name, object);
     }
     
-    
+    private void filterUnwantedProperties(String name) throws SAXNotRecognizedException{
+        if(ValidationConstants.PROPERTY_VALIDATOR_AS_DECLARATION_HANDLER.equals(name)|| ValidationConstants.PROPERTY_DECLARATION_HANDLER.equals(name)){
+            throw new SAXNotRecognizedException(name+" property is not available on IntrinsicValidator");
+        }
+    }
     
     
     
@@ -237,6 +250,20 @@ class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
             }
         }
         
+        
+    }
+    
+    private class FakeIntrinsicSchema extends Schema {
+
+        @Override
+        public Validator newValidator() {
+            throw new UnsupportedOperationException("It should not be possible to call this"); 
+        }
+
+        @Override
+        public ValidatorHandler newValidatorHandler() {
+            return validatorHandler;
+        }
         
     }
 }

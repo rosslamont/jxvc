@@ -38,6 +38,7 @@ import org.xml.sax.SAXParseException;
 public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
     
     public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd";
+    
     public static final String SIMPLE_ROOT_LOCATION="/schema/simpleRootSchema.xsd";
     private static final Map<String,String> RESOURCE_LOCATIONS=new HashMap<String, String>();
     static{
@@ -46,19 +47,22 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
     
     private Map<String,Boolean> setFeatureMap;
     private Map<String,Object> setPropertyMap;
+    private String languageOrSchema;
+    @Before
+    public void setup(){
+        languageOrSchema=null;
+        setFeatureMap=null;
+        setPropertyMap=null;
+    }
     
     public SubordinateFeaturesAndPropertyTest() {
     }
     
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
     @Test
-    public void testSettingValidSubordinateFeature(){
+    public void testSettingValidSubordinateFeatureForXSDLanguage(){
         try{
+            languageOrSchema = XMLConstants.W3C_XML_SCHEMA_NS_URI;
             setFeatureMap = new HashMap<String, Boolean>();
             setFeatureMap.put(XMLConstants.FEATURE_SECURE_PROCESSING,false);
             Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
@@ -70,8 +74,9 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
     }
 
     @Test
-    public void testSettingInvalidSubordinateProperty(){
+    public void testSettingInvalidSubordinatePropertyForXSDLanguage(){
         try{
+            languageOrSchema = XMLConstants.W3C_XML_SCHEMA_NS_URI;
             setPropertyMap = new HashMap<String, Object>();
             setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
             Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
@@ -87,17 +92,87 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
         }
     }
 
+    @Test
+    public void testSettingValidSubordinateFeatureForSchema(){
+        try{
+            languageOrSchema=SIMPLE_ROOT_SYSTEM_ID;
+            setFeatureMap = new HashMap<String, Boolean>();
+            setFeatureMap.put(XMLConstants.FEATURE_SECURE_PROCESSING,false);
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } 
+    }
+
+    @Test
+    public void testSettingInvalidSubordinatePropertyForSchema(){
+        try{
+            languageOrSchema=SIMPLE_ROOT_SYSTEM_ID;
+            setPropertyMap = new HashMap<String, Object>();
+            setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            //should throw this exception
+        } catch(SAXException ex){
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
+    }
+    
+    
+    @Test
+    public void testSettingValidSubordinateFeatureUsingValidator(){
+        try{
+            languageOrSchema=XMLConstants.W3C_XML_SCHEMA_NS_URI;
+            setFeatureMap = new HashMap<String, Boolean>();
+            setFeatureMap.put(XMLConstants.FEATURE_SECURE_PROCESSING,false);
+            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } 
+    }
+
+    @Test
+    public void testSettingInvalidSubordinateUsingValidator(){
+        try{
+            languageOrSchema=XMLConstants.W3C_XML_SCHEMA_NS_URI;
+            setPropertyMap = new HashMap<String, Object>();
+            setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
+            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            //should throw this exception
+        } catch(SAXException ex){
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        }
+    }
+    
+    
+    
+
     @Override
     protected Map<String, String> getResourceMap() {
         return RESOURCE_LOCATIONS;
     }
 
     @Override
-    protected void handlerFeatureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
+    protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
         try {
-            super.handlerFeatureSetupCallback(featuresAndProperties);
+            super.featureSetupCallback(featuresAndProperties);
             Map<String,FeaturePropertyProvider> subordinateFeaturesMap = featuresAndProperties.getProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES);
-            FeaturePropertyProvider xsdHandler = subordinateFeaturesMap.get(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            FeaturePropertyProvider xsdHandler = subordinateFeaturesMap.get(languageOrSchema);
             if (setFeatureMap!=null){
                 for (Map.Entry<String,Boolean> featureEntry:setFeatureMap.entrySet()){
                     xsdHandler.setFeature(featureEntry.getKey(), featureEntry.getValue());

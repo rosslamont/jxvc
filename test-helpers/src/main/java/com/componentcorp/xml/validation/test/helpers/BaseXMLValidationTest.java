@@ -133,10 +133,30 @@ public abstract class BaseXMLValidationTest extends Assert{
             fail("Should have found the intrinsic factory");
         }
         try {
-            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
             Schema schema = schemaFactory.newSchema();
             //ValidatorHandler handler =schema.newValidatorHandler();
-            Validator validator = schema.newValidator();
+            final Validator validator = schema.newValidator();
+            featureSetupCallback(new FeaturePropertyProvider() {
+                @Override
+                public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+                    return validator.getFeature(name);
+                }
+
+                @Override
+                public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+                    return validator.getProperty(name);
+                }
+
+                @Override
+                public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+                    validator.setFeature(name, value);
+                }
+
+                @Override
+                public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
+                    validator.setProperty(name, object);
+                }
+            });
             //validator.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true); //just test the feature is working even though its default
             validator.setErrorHandler(contentHandler);
             validator.setResourceResolver(contentHandler);
@@ -144,8 +164,6 @@ public abstract class BaseXMLValidationTest extends Assert{
             Source source = new StreamSource(is);
             Result result = new StreamResult();
             validator.validate(source, result);
-        } catch (SAXException ex) {
-            fail("Should not have thrown an SAXException creating schema");
         } catch (IOException io) {
             fail("Should not have thrown an IOException creating schema");
         }
@@ -154,7 +172,7 @@ public abstract class BaseXMLValidationTest extends Assert{
     
     abstract protected Map<String,String> getResourceMap();
     
-    protected void handlerFeatureSetupCallback(FeaturePropertyProvider featuresAndProperties){
+    protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties){
         
     }
     
@@ -166,7 +184,7 @@ public abstract class BaseXMLValidationTest extends Assert{
 
         @Override
         public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
-            handlerFeatureSetupCallback(instrinsicValidatorHandlerProxy);
+            featureSetupCallback(instrinsicValidatorHandlerProxy);
         }
         
     }

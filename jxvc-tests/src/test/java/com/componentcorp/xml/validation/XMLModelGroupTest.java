@@ -149,8 +149,8 @@ public class XMLModelGroupTest extends BaseXMLValidationTest {
     }
 
     @Override
-    protected void handlerFeatureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
-        super.handlerFeatureSetupCallback(featuresAndProperties); 
+    protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
+        super.featureSetupCallback(featuresAndProperties); 
         if (callback!=null){
             callback.onConstruction(featuresAndProperties);
         }
