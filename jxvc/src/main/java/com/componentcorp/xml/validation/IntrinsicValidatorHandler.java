@@ -105,7 +105,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         this.errorHandler=errorHandler;
         setErrorHandlerInternal(errorHandler);
         if(!firstElementPassed){
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() throws SAXException {
                     setErrorHandlerInternal(errorHandler);
                 }
@@ -130,7 +130,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         this.resourceResolver=resourceResolver;
         setResourceResolverInternal(resourceResolver);
         if(!firstElementPassed){
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() throws SAXException {
                     setResourceResolverInternal(resourceResolver);
                 }
@@ -162,7 +162,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             setDocumentLocatorInternal(locator);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() {
                     setDocumentLocatorInternal(locator);
                 }
@@ -179,7 +179,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
 
     public void startDocument() throws SAXException {
         reset();
-        deferredActions.add(new DeferredAction() {
+        deferredActions.add(new BaseDeferredAction() {
             public void perform() throws SAXException{
                 startDocumentInternal();
             }
@@ -203,7 +203,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             startPrefixMappingInternal(prefix, uri);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() throws SAXException {
                     startPrefixMappingInternal(prefix, uri);
                 }
@@ -222,7 +222,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             endPrefixMappingInternal(prefix);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     endPrefixMappingInternal(prefix);
                 }
@@ -254,7 +254,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             charactersInternal(ch, start, length);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     charactersInternal(ch, start, length);
                 }
@@ -272,7 +272,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             ignorableWhitespaceInternal(ch, start, length);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() throws SAXException {
                     ignorableWhitespaceInternal(ch, start, length);
                 }
@@ -292,7 +292,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             processingInstructionInternal(target, data);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     processingInstructionInternal(target, data);
                 }
@@ -309,7 +309,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             skippedEntityInternal(name);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform() throws SAXException {
                     skippedEntityInternal(name);
                 }
@@ -512,7 +512,13 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         while(deferredActionIterator.hasNext()){
             DeferredAction action = deferredActionIterator.next();
             deferredActionIterator.remove();
+            for (Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
+                wrapper.setDocumentLocator(action);
+            }
             action.perform();
+        }
+        for (Sax2DefaultHandlerWrapper wrapper:currentOrderedValidators){
+            wrapper.setDocumentLocator(locator);
         }
     }
     
@@ -639,7 +645,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             elementDeclInternal(name, model);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     elementDeclInternal(name, model);
                 }
@@ -658,7 +664,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             attributeDeclInternal(eName, aName, type, mode, value);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     attributeDeclInternal(eName, aName, type, mode, value);
                 }
@@ -677,7 +683,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             internalEntityDeclInternal(name, value);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     internalEntityDeclInternal(name, value);
                 }
@@ -696,7 +702,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
             externalEntityDeclInternal(name, publicId, systemId);
         }
         else{
-            deferredActions.add(new DeferredAction() {
+            deferredActions.add(new BaseDeferredAction() {
                 public void perform()  throws SAXException{
                     externalEntityDeclInternal(name, publicId, systemId);
                 }
@@ -807,8 +813,47 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     /**
      * Ideally a lambda, but I guess we have to have at least java 6 support
      */
-    private interface DeferredAction{
+    private interface DeferredAction extends Locator{
         void perform() throws SAXException;
+    }
+    
+    private abstract class BaseDeferredAction implements DeferredAction{
+        private final String publicId;
+        private final String systemId;
+        private final int lineNumber;
+        private final int colNumber;
+                
+        
+        
+        public BaseDeferredAction() {
+            this.publicId=locator!=null?locator.getPublicId():null;
+            this.systemId=locator!=null?locator.getSystemId():null;
+            this.lineNumber=locator!=null?locator.getLineNumber():-1;
+            this.colNumber=locator!=null?locator.getColumnNumber():-1;
+        }
+        
+        
+
+        @Override
+        public String getPublicId() {
+            return publicId;
+        }
+
+        @Override
+        public String getSystemId() {
+            return systemId;
+        }
+
+        @Override
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
+        @Override
+        public int getColumnNumber() {
+            return colNumber;
+        }
+        
     }
     
     /**
