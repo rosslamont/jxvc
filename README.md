@@ -1,57 +1,27 @@
 # jxvc
-Java XML Validation Collection is a collection of useful Java JAXP XML Validators, and is the home to the IntrinsicValidator which can detect and apply any schema which is intrinsically identified in the document.  This includes the standard DTD and XSD validators, but also supports xml-model associated schema, which is a capability sorely lacking in JAXP Validation.
 
-note this project is work in progress.  comments below this line are boilerplate.
+A collection of JAXP compliant validators for different XML Validation languages.  The following validation situations are supported:
 
-## Getting Started
+* Uber validator (IntrinsicSchemaFactory) - automatically detects the following situations:
+  * xml-model processing instruction (compliant with ISO/IEC 19757-11:2011)
+  * xsi annotated XML Schema
+  * DTD (coming soon)
+* Relax NG XML Syntax (jing wrapper)
+* Relax NG Compact Syntax
+* (To be implemented) Schematron
+* (To be implemented) NVDL
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+In addition, a small library of functionality is provided to support other validation implementations.
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
+All artifacts are available in the maven central repository.  There are a number of artifacts provided to provide flexibility and to permit developers to substitue their own validator implementations if desired.
 
-Say what the step will be
+The artifacts provided are as follows:
 
-```
-Give the example
-```
+#### IntrinsicSchemaFactory uber validator
 
-And repeat
 
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
 
 ## Deployment
 
