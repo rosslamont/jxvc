@@ -22,40 +22,55 @@ The artifacts provided are as follows:
 #### IntrinsicSchemaFactory uber validator
 
 ```xml
-        <dependency>
-            <groupId>com.componentcorp.xml.validation</groupId>
-            <artifactId>jxvc</artifactId>
-            <version>0.9.0</version>
-        </dependency>
+<dependency>
+    <groupId>com.componentcorp.xml.validation</groupId>
+    <artifactId>jxvc</artifactId>
+    <version>0.9.0</version>
+</dependency>
 ```
 
 #### RelaxNG XML Syntax validator
 
 ```xml
-        <dependency>
-            <groupId>com.componentcorp.xml.validation</groupId>
-            <artifactId>relaxng</artifactId>
-            <version>0.9.0</version>
-        </dependency>
+<dependency>
+    <groupId>com.componentcorp.xml.validation</groupId>
+    <artifactId>relaxng</artifactId>
+    <version>0.9.0</version>
+</dependency>
 ```
 
 #### RelaxNG Compact Syntax validator
 
 ```xml
-        <dependency>
-            <groupId>com.componentcorp.xml.validation</groupId>
-            <artifactId>relaxng-compact</artifactId>
-            <version>0.9.0</version>
-        </dependency>
+<dependency>
+    <groupId>com.componentcorp.xml.validation</groupId>
+    <artifactId>relaxng-compact</artifactId>
+    <version>0.9.0</version>
+</dependency>
+```
+
+#### Utility Classes
+
+```xml
+<dependency>
+    <groupId>com.componentcorp.xml.validation</groupId>
+    <artifactId>base</artifactId>
+    <version>0.9.0</version>
+</dependency>
 ```
 
 ## Usage
+
+
 
 ## Javadoc
 
 Javadoc for each project is available at:
 
 * [IntrinsicSchemaFactory uber validator](http://javadoc.io/doc/com.componentcorp.xml.validation/jxvc)
+* [Relax NG XML Syntax validator](http://javadoc.io/doc/com.componentcorp.xml.validation/relaxng)
+* [Relax NG Compact Syntax validator](http://javadoc.io/doc/com.componentcorp.xml.validation/relaxng-compact)
+* [Utility Classes](http://javadoc.io/doc/com.componentcorp.xml.validation/base)
 
 ## Built With
 
