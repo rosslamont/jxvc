@@ -21,11 +21,41 @@ The artifacts provided are as follows:
 
 #### IntrinsicSchemaFactory uber validator
 
+```xml
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>jxvc</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+```
 
+#### RelaxNG XML Syntax validator
 
-## Deployment
+```xml
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>relaxng</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+```
 
-Add additional notes about how to deploy this on a live system
+#### RelaxNG Compact Syntax validator
+
+```xml
+        <dependency>
+            <groupId>com.componentcorp.xml.validation</groupId>
+            <artifactId>relaxng-compact</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+```
+
+## Usage
+
+## Javadoc
+
+Javadoc for each project is available at:
+
+* [IntrinsicSchemaFactory uber validator](http://javadoc.io/doc/com.componentcorp.xml.validation/jxvc)
 
 ## Built With
 
@@ -35,10 +65,6 @@ Add additional notes about how to deploy this on a live system
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
 ## Authors
 
 * **Ross Lamont** - *Initial work* 
@@ -47,10 +73,5 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License with some variations - see the [LICENSE](LICENSE) file for details
 
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
