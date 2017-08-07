@@ -1,5 +1,8 @@
 # jxvc
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.componentcorp.xml.validation/jxvc-master.svg?label=Maven%20Central)](http://search.maven.org/#search%7Cga%7C1%7Cjxvc)
+[![Build Status](https://travis-ci.org/rosslamont/jxvc.svg?branch=master)](https://travis-ci.org/rosslamont/jxvc)
+
 A collection of JAXP compliant validators for different XML Validation languages.  The following validation situations are supported:
 
 * Uber validator (IntrinsicSchemaFactory) - automatically detects the following situations:
