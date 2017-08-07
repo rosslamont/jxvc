@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.componentcorp.xml.validation</groupId>
         <artifactId>jxvc-master</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     <artifactId>base</artifactId>
