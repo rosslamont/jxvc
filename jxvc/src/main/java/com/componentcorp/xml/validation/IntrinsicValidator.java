@@ -49,7 +49,7 @@ import org.xml.sax.ext.EntityResolver2;
  *
  * @author rlamont
  */
-class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
+public class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
     
     
     private SAXParseException firstFatalError=null;

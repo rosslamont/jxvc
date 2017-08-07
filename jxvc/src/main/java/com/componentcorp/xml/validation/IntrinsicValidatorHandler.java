@@ -59,14 +59,16 @@ import org.xml.sax.ext.DeclHandler;
  *
  * @author rlamont
  */
-class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler,FeaturePropertyProvider{
+public class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler,FeaturePropertyProvider{
     
     private Sax2DefaultHandlerWrapper contentHandler=new Sax2DefaultHandlerWrapper(null, null,false);
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
-//    private ValidationConstants.ConflictResolution propertyConflictResolutionMethod=ValidationConstants.ConflictResolution.MODEL_FIRST;
     private final Map<String,Sax2DefaultHandlerWrapper> validatorCache=new WeakHashMap<String, Sax2DefaultHandlerWrapper>();
     private final List<Sax2DefaultHandlerWrapper> currentOrderedValidators=new ArrayList<Sax2DefaultHandlerWrapper>();
+    private Sax2DefaultHandlerWrapper pendingXSI_XSDValidator =null;
+    private boolean XSI_ElementsFound=false;
+    private Sax2DefaultHandlerWrapper pendingDTDValidator =null;
     private boolean firstElementPassed=false;
     private final Collection<DeferredAction> deferredActions=new ArrayList();
     private Locator locator;
@@ -86,7 +88,13 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         try{
             featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES, new SubordinateFeaturesAndProperties());
         } catch (SAXException ignore){}
-        
+        featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_PROCESSING_ORDER, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        try{
+            featuresAndProperties.setReadOnlyProperty(ValidationConstants.PROPERTY_PROCESSING_ORDER, ValidationConstants.ProcessingOrder.NATIVE_ORDER);
+        }catch (SAXException ignore){}
+        featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_DISABLE_DTD_STRUCTURE, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_DISABLE_XML_MODEL, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
+        featuresAndProperties.addAllowedFeature(ValidationConstants.FEATURE_DISABLE_XSI_BASED_XSD, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
     }
 
     @Override
@@ -237,7 +245,7 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     }
 
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        handleElement(uri, localName, qName, atts);
+//        handleElement(uri, localName, qName, atts);
         if (!firstElementPassed){
             handleRootElement(uri,localName,qName,atts);
         }
@@ -373,6 +381,10 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     void reset() {
         firstElementPassed=false;
         deferredActions.clear();
+        pendingDTDValidator=null;
+        pendingXSI_XSDValidator=null;
+        XSI_ElementsFound=false;
+        this.currentOrderedValidators.clear();
 //        foundNamespaces.clear();
         //forcably reset the error handler so that deferred actions are created.
         setErrorHandler(errorHandler);
@@ -381,6 +393,9 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
     }
 
     private void createXMLModelBasedValidator(String data) throws SAXException{
+        if (getFeature(ValidationConstants.FEATURE_DISABLE_XML_MODEL)){
+            return;
+        }
         final String HREF="href";
         final String TYPE="type";
         final String SCHEMATYPENS="schematypens";
@@ -536,20 +551,113 @@ class IntrinsicValidatorHandler extends ValidatorHandler implements  DeclHandler
         //the xsd schema as we go through the document, but this poses all sorts of replay problems
         //where a late found  xsd processor needs to be setup after first element.  At the moment the 
         //solution is to use a default processor.
+//        String schemaLocation;
+//        String noNamespaceSchemaLocation;
+//        for (int i=0;i< atts.getLength();i++){
+//            String attName=atts.getLocalName(i);
+//            String attQName = atts.getQName(i);
+//            String attUri = atts.getURI(i);
+//            int k=atts.getIndex(attQName);  //discard this line
+//        }
+        
+    }
+
+    private void detectAndSetupXSIBasedXSDValidation(String uri, String localName, String qName, Attributes atts) throws SAXException {
+        
+        //TODO: xsi attributes can be on any element, so in the future we might attempt to identify 
+        //the xsd schema as we go through the document, but this poses all sorts of replay problems
+        //where a late found  xsd processor needs to be setup after first element.  At the moment the 
+        //solution is to use a default processor.
+        if (this.XSI_ElementsFound){
+            return;
+        }
         String schemaLocation;
         String noNamespaceSchemaLocation;
         for (int i=0;i< atts.getLength();i++){
             String attName=atts.getLocalName(i);
             String attQName = atts.getQName(i);
             String attUri = atts.getURI(i);
-            int k=atts.getIndex(attQName);  //discard this line
+            if (XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(attUri)){
+                XSI_ElementsFound=true;
+                if (!getFeature(ValidationConstants.FEATURE_DISABLE_XSI_BASED_XSD)){
+                    SchemaFactory schemaFactory=SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                    if (schemaFactory==null){
+                        throw new SAXParseException("Unable to load schema factory for "+XMLConstants.W3C_XML_SCHEMA_NS_URI, locator);
+                    }
+                    Schema schema = schemaFactory.newSchema();
+                    InputSource inputSource = new InputSource();
+                    Sax2DefaultHandlerWrapper wrapper=new Sax2DefaultHandlerWrapper(schema.newValidatorHandler(), inputSource,true);
+                    ValidationConstants.ProcessingOrder order = (ValidationConstants.ProcessingOrder) getProperty(ValidationConstants.PROPERTY_PROCESSING_ORDER);
+                    if (order == null || order == ValidationConstants.ProcessingOrder.NATIVE_ORDER){
+                        addNewValidator(wrapper, XMLConstants.W3C_XML_SCHEMA_NS_URI, null);
+                    }
+                    else {
+                        this.pendingXSI_XSDValidator=wrapper;
+                    }
+                }
+            }
         }
         
     }
 
     private void handleRootElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+        detectAndSetupXSIBasedXSDValidation(uri,localName,qName,atts);
         firstElementPassed=true;
         SAXException lateThrow=null;
+        ValidationConstants.ProcessingOrder order = (ValidationConstants.ProcessingOrder) getProperty(ValidationConstants.PROPERTY_PROCESSING_ORDER);
+        if (order == null){
+            order = ValidationConstants.ProcessingOrder.NATIVE_ORDER;
+        }
+        switch(order){
+            case DTD_MODEL_XSI:
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(0, pendingDTDValidator);
+                }
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                break;
+            case DTD_XSI_MODEL:
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(0,pendingDTDValidator);
+                }
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(0, pendingDTDValidator);
+                }
+                break;
+            case MODEL_DTD_XSI:
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                break;
+            case MODEL_XSI_DTD:
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                break;
+            case XSI_DTD_MODEL:
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(0, pendingDTDValidator);
+                }
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(0,pendingDTDValidator);
+                }
+                break;
+            case XSI_MODEL_DTD:
+                if (pendingDTDValidator!=null){
+                    this.currentOrderedValidators.add(pendingDTDValidator);
+                }
+                if(pendingXSI_XSDValidator!=null){
+                    this.currentOrderedValidators.add(0,pendingDTDValidator);
+                }
+                break;
+        }
         String defaultValidatorUri=(String) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DEFAULT_VALIDATOR);
         if (this.currentOrderedValidators.isEmpty() && defaultValidatorUri!=null){
             Sax2DefaultHandlerWrapper wrapper = validatorCache.get(defaultValidatorUri);

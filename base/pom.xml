@@ -9,7 +9,7 @@
     </parent>
     <artifactId>base</artifactId>
     <packaging>jar</packaging>
-    <name>Base XML Classes for Schema Validation</name>
+    <name>Utility Classes for Schema Validation</name>
     <description>
         Utility classes for JAXP XML Validation.
     </description>

@@ -35,16 +35,63 @@ public interface ValidationConstants {
      */
     public static final String INTRINSIC_NS_URI="http://componentcorp.com/xml/ns/xml-model/1.0";
     
-//    public static  enum ConflictResolution{
-//        MODEL_ONLY,
-//        MODEL_FIRST,
-//        MODEL_FIRST_IGNORE_XSD_CONFLICT,
-//        XSI_FIRST,
-//        XSI_FIRST_IGNORE_XSD_CONFLICT,
-//        XSI_ONLY
-//    } ;
-//    public static final String PROPERTY_CONFLICT_RESOLUTION="http://com.componentcorp.xml.validator.ValidationConstants/property/conflict-resolution";
+    /** 
+     * Enumeration allowing you to specify the processing order where DTD, XSI and xml-model elements are simultaneously present.
+     * Use this property along with the various features to disable DTD, XSI or xml-model processing.  This is not normally needed,
+     * but some validation techniques can augment the xml information set, and this may be relevant for downstream validators.
+     */
+    public static  enum ProcessingOrder{
+        /**
+         * Validations will be ordered according to the order discovered in the XML Document
+         */
+        NATIVE_ORDER,
+        /**
+         * DTD will be processed first, then XSI derived XML Schema, then xml-model elements.
+         */
+        DTD_XSI_MODEL,
+        /**
+         * XSI derived XML Schema will be processed first, then DTD, then xml-model elements.
+         */
+        XSI_DTD_MODEL,
+        /**
+         * DTD will be processed first, then xml-model elements, then XSI derived XML Schema.
+         */
+        DTD_MODEL_XSI,
+        /**
+         * XSI derived XML Schema will be processed first, then xml-model elements, then DTD.
+         */
+        XSI_MODEL_DTD,
+        /**
+         * xml-model elements will be processed first, then DTD, then XSI derived XML Schema.
+         */
+        MODEL_DTD_XSI,
+        /**
+         * xml-model elements will be processed first, then XSI derived XML Schema, then DTD.
+         */
+        MODEL_XSI_DTD
+    } ;
     
+    /**
+     * In some cases different styles of validation can coexist in a document.  This property allows you to specify the order of processing
+     * undertaken by the intrinsic property.  This can work hand in hand with features which disable various styles of processing.
+     */
+    public static final String PROPERTY_PROCESSING_ORDER="http://com.componentcorp.xml.validator.ValidationConstants/property/processing-order";
+    
+    /**
+     * If set true, any xml-model processing instructions will be ignored.
+     */
+    public static final String FEATURE_DISABLE_XML_MODEL="http://com.componentcorp.xml.validator.ValidationConstants/feature/disable-xml-model-processing";
+    
+    /**
+     * If set true, any xsi (XML Schema Instance) attributes on the root tag of the document will be ignored.  XSD processing may still be invoked through any
+     * xsd files identified in xml-model processing instructions.
+     */
+    public static final String FEATURE_DISABLE_XSI_BASED_XSD="http://com.componentcorp.xml.validator.ValidationConstants/feature/disable-xsi-based-xsd-processing";
+    
+    /**
+     * If set true, DTD validation is not performed.  Note that most SAX parsers will still process DTD declared entities.
+     */
+    public static final String FEATURE_DISABLE_DTD_STRUCTURE="http://com.componentcorp.xml.validator.ValidationConstants/feature/disable-dtd-structure-processing";
     
     /**
      * Feature which defines what should happen if multiple validation sources are found and no validator implementation is available for some (but not all) libs.
