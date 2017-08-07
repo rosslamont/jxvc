@@ -17,6 +17,8 @@ In addition, a small library of functionality is provided to support other valid
 
 All artifacts are available in the maven central repository.  There are a number of artifacts provided to provide flexibility and to permit developers to substitue their own validator implementations if desired.
 
+All artifacts are available at maven central.  Note that the various validator libraries do not have dependencies upon each other.  See the [Usage examples](https://github.com/rosslamont/jxvc/wiki/Usage-examples) for a detailed explanation.
+
 The artifacts provided are as follows:
 
 #### IntrinsicSchemaFactory uber validator
