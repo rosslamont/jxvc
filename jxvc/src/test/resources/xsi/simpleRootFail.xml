@@ -16,8 +16,8 @@ limitations under the License.
 -->
 
 <root
-    xmlns="http://componentcorp/schema/jxvc/test/simpleRootSchema"
+    xmlns="http://componentcorp.com/schema/jxvc/test/simpleRootSchema"
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xsi:schemaLocation="http://componentcorp/schema/jxvc/test/simpleRootSchema http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd">
+    xsi:schemaLocation="http://componentcorp.com/schema/jxvc/test/simpleRootSchema http://componentcorp.com/schema/jxvc/test/simpleRootSchema.xsd">
     <children/>
 </root>

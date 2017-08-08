@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<?xml-model href="http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd" schematypens="http://www.w3.org/2001/XMLSchema" ?>
+<?xml-model href="http://componentcorp.com/schema/jxvc/test/simpleRootSchema.xsd" schematypens="http://www.w3.org/2001/XMLSchema" ?>
 <!--root-->
-<root xmlns="http://componentcorp/schema/jxvc/test/simpleRootSchema">
+<root xmlns="http://componentcorp.com/schema/jxvc/test/simpleRootSchema">
     <child/>
 </root>

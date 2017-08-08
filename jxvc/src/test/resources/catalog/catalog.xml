@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+
+    <system systemId="http://componentcorp.com/schema/jxvc/test/simpleRootSchema.xsd"
+            uri="../schema/simpleRootSchema.xsd"/>
+
+    <!--system systemId="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+            uri="dtd/xhtml1/xhtml1-transitional.dtd"/>
+
+    <system systemId="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+            uri="dtd/xhtml11/xhtml11-flat.dtd"/-->
+
+  </catalog>

@@ -40,4 +40,33 @@
             <version>20091111</version>
         </dependency-->
     </dependencies>
+  <!--build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <version>1.0.2-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+            <catalogs>
+                <catalog>test/resources/catalog/catalog.xml</catalog>
+            </catalogs>
+            <basedir>src</basedir>
+            <validationSets>
+                <validationSet>
+                    <dir>src/test/resources/xsi</dir>
+                    <validating>true</validating>
+                </validationSet>
+            </validationSets>
+        </configuration>
+      </plugin>
+      
+    </plugins>
+  </build-->
 </project>

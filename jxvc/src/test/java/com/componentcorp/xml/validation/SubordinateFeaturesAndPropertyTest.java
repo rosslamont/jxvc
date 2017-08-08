@@ -37,7 +37,7 @@ import org.xml.sax.SAXParseException;
  */
 public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
     
-    public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp/schema/jxvc/test/simpleRootSchema.xsd";
+    public static final String SIMPLE_ROOT_SYSTEM_ID="http://componentcorp.com/schema/jxvc/test/simpleRootSchema.xsd";
     
     public static final String SIMPLE_ROOT_LOCATION="/schema/simpleRootSchema.xsd";
     private static final Map<String,String> RESOURCE_LOCATIONS=new HashMap<String, String>();

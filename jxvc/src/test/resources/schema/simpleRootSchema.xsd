@@ -15,19 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<xs:schema version="1.0"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="http://componentcorp/schema/jxvc/test/simpleRootSchema"
-           targetNamespace="http://componentcorp/schema/jxvc/test/simpleRootSchema"
+<xsd:schema version="1.0"
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://componentcorp.com/schema/jxvc/test/simpleRootSchema"
+           targetNamespace="http://componentcorp.com/schema/jxvc/test/simpleRootSchema"
            elementFormDefault="qualified">
 <!--           targetNamespace="http://componentcorp/schema/jxvc/test/simpleRootSchema"
            xmlns="http://componentcorp/schema/jxvc/test/simpleRootSchema"-->
-    <xs:element name="root">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="child"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
+    <xsd:element name="root">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="child"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-</xs:schema>
+</xsd:schema>
