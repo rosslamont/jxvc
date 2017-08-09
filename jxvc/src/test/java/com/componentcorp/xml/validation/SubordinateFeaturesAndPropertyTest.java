@@ -171,7 +171,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
     protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
         try {
             super.featureSetupCallback(featuresAndProperties);
-            Map<String,FeaturePropertyProvider> subordinateFeaturesMap = featuresAndProperties.getProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES);
+            Map<String,FeaturePropertyProvider> subordinateFeaturesMap = (Map<String,FeaturePropertyProvider>) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES);
             FeaturePropertyProvider xsdHandler = subordinateFeaturesMap.get(languageOrSchema);
             if (setFeatureMap!=null){
                 for (Map.Entry<String,Boolean> featureEntry:setFeatureMap.entrySet()){

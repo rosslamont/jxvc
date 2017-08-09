@@ -18,13 +18,13 @@ package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import com.componentcorp.xml.validation.base.LifecycleSchemaFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -40,7 +40,7 @@ import org.xml.sax.SAXNotSupportedException;
  * instruction in accordance with ISO/IEC 19757-11.
  * @author rlamont
  */
-public class IntrinsicSchemaFactory extends SchemaFactory implements FeaturePropertyProvider {
+public class IntrinsicSchemaFactory extends LifecycleSchemaFactory implements FeaturePropertyProvider {
 
     private ErrorHandler errorHandler=null;
     private LSResourceResolver resourceResolver=null;
@@ -115,12 +115,12 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
      * @throws UnsupportedOperationException always 
      */
     @Override
-    public Schema newSchema(Source[] schemas) throws SAXException {
+    protected Schema newSchemaInternal(Source[] schemas) throws SAXException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Schema newSchema() throws SAXException {
+    protected Schema newSchemaInternal() throws SAXException {
         return new IntrinsicSchema(this,new FeaturePropertyProviderImpl(featuresAndProperties));
     }
 
@@ -132,23 +132,11 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
     @Override
     public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
         if (ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK.equals(name)){
-            try{
-                ValidatorHandlerConstructionCallback callback = (ValidatorHandlerConstructionCallback) object;
-                ThreadLocal<ValidatorHandlerConstructionCallback> threadLocal= featuresAndProperties.getWriteOnlyProperty(name);
-                if (threadLocal==null){
-                    threadLocal = new ThreadLocal<ValidatorHandlerConstructionCallback>();
-                    featuresAndProperties.setProperty(name, threadLocal);
-                }
-                threadLocal.set(callback);
-                return ;
-            }
-            catch (ClassCastException cce){
-                SAXNotSupportedException snse = new SAXNotSupportedException(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK+" property must be an instance of ValidatorHandlerConstructionCallback");
-                snse.initCause(snse);
-                throw snse;
-            }
+            super.setProperty(name, object);
         }
-        featuresAndProperties.setProperty(name, object);
+        else{
+            featuresAndProperties.setProperty(name, object);
+        }
     }
 
     @Override
@@ -162,18 +150,6 @@ public class IntrinsicSchemaFactory extends SchemaFactory implements FeatureProp
     }
 
 
-    ValidatorHandlerConstructionCallback getValidatorHandlerCallback() {
-        try {
-            ThreadLocal<ValidatorHandlerConstructionCallback> threadLocal= featuresAndProperties.getWriteOnlyProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK);
-            if (threadLocal!=null){
-                return threadLocal.get();
-            }
-        } catch (SAXNotRecognizedException ex) {
-        } catch (SAXNotSupportedException ex) {
-        }
-        return null;
-    }
-    
     
     
 }

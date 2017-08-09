@@ -691,7 +691,7 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
     
     private void chainValidatorsAndDeclHandlers() throws SAXNotRecognizedException, SAXNotSupportedException {
         firstContentHandler = contentHandler;
-        firstDeclHandler = featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER);
+        firstDeclHandler = (DeclHandler) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER);
         ListIterator<Sax2DefaultHandlerWrapper> wrapperIterator = currentOrderedValidators.listIterator(currentOrderedValidators.size());
         while(wrapperIterator.hasPrevious()){
             Sax2DefaultHandlerWrapper wrapper=wrapperIterator.previous();

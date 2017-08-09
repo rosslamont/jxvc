@@ -16,8 +16,9 @@
 
 package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import com.componentcorp.xml.validation.base.LifecycleSchema;
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
-import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 import javax.xml.validation.ValidatorHandler;
 
@@ -25,11 +26,12 @@ import javax.xml.validation.ValidatorHandler;
  *
  * @author rlamont
  */
-public class IntrinsicSchema extends Schema{
+public class IntrinsicSchema extends LifecycleSchema{
     private final FeaturePropertyProviderInternal featuresAndProperties;
     private final IntrinsicSchemaFactory parent;
     
     IntrinsicSchema(IntrinsicSchemaFactory parent,FeaturePropertyProviderInternal featuresAndProperties){
+        super(parent);
         this.featuresAndProperties=featuresAndProperties;
         this.featuresAndProperties.addAllowedProperty(ValidationConstants.PROPERTY_VALIDATOR_HANDLER_CONSTRUCTION_CALLBACK, FeaturePropertyProviderInternal.ReadWriteable.UNSUPPORTED);
         this.parent=parent;
@@ -41,13 +43,15 @@ public class IntrinsicSchema extends Schema{
     }
 
     @Override
-    public ValidatorHandler newValidatorHandler() {
-        ValidatorHandlerConstructionCallback callback = parent.getValidatorHandlerCallback();
-        ValidatorHandler handler= new IntrinsicValidatorHandler(new FeaturePropertyProviderImpl(featuresAndProperties));
-        if (callback!=null){
-            callback.onConstruction(new ValidatorHandlerFeaturesAndPropertiesProxy(handler));
-        }
-        return handler;
+    public ValidatorHandler newValidatorHandlerInternal() {
+        return new IntrinsicValidatorHandler(new FeaturePropertyProviderImpl(featuresAndProperties));
     }
+
+    @Override
+    protected FeaturePropertyProvider newFeaturePropertyProxy(ValidatorHandler handler) {
+        return new ValidatorHandlerFeaturesAndPropertiesProxy(handler);
+    }
+    
+    
     
 }

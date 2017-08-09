@@ -37,7 +37,7 @@ public interface FeaturePropertyProvider {
     /**
      * @see SchemaFactory#getProperty(java.lang.String) 
      */
-    <T> T getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
+    Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**
      * @see SchemaFactory#setFeature(java.lang.String, boolean) 
