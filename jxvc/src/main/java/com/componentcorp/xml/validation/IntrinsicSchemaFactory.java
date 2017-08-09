@@ -116,7 +116,10 @@ public class IntrinsicSchemaFactory extends LifecycleSchemaFactory implements Fe
      */
     @Override
     protected Schema newSchemaInternal(Source[] schemas) throws SAXException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (schemas==null || schemas.length<1){
+            return newSchemaInternal();
+        }
+        throw new UnsupportedOperationException("IntrinsicSchemaFactory does not support source schemas.  Schemas can only be determined from an xml document");
     }
 
     @Override
