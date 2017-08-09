@@ -6,7 +6,7 @@
     <parent>
         <artifactId>jxvc-master</artifactId>
         <groupId>com.componentcorp.xml.validation</groupId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
         <relativePath>../</relativePath>
     </parent>
     <name>XML Schema Association and Validation</name>
