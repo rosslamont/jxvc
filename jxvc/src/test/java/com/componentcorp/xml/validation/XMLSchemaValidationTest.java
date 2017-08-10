@@ -15,10 +15,12 @@
  */
 package com.componentcorp.xml.validation;
 
+import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.validation.Validator;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,6 +112,27 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
         } catch (SAXNotRecognizedException ex) {
             ex.printStackTrace();
             fail("Should not have thrown an exception");
+        }
+    }
+    
+    @Test
+    public void simpleSAXRootFailXSDValidatorNoErrorHandler() throws SAXException{
+        try{
+            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRootFail.xml",new ValidatorPreExecutionCallback() {
+                @Override
+                public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
+                    validator.setErrorHandler(null);
+                }
+            });
+            fail("Should have thrown an exception");
+        } catch (SAXNotSupportedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXNotRecognizedException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } catch (SAXException se){
+            se.printStackTrace();
         }
     }
     

@@ -241,6 +241,9 @@ public class IntrinsicValidator extends Validator implements FeaturePropertyProv
             if (wrappedHandler!=null){
                 wrappedHandler.error(exception);
             }
+            else if (firstFatalError==null){
+                firstFatalError = exception;
+            }
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {

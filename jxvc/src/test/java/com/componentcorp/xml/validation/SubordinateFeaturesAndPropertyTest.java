@@ -20,9 +20,9 @@ import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.SAXParser;
+import javax.xml.validation.Validator;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -79,7 +79,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
             languageOrSchema = XMLConstants.W3C_XML_SCHEMA_NS_URI;
             setPropertyMap = new HashMap<String, Object>();
             setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
-            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml", new SAXCallback());
             assertEquals("Should have been no validation errors",0,faults.size());
         } catch (SAXNotSupportedException ex) {
             ex.printStackTrace();
@@ -98,7 +98,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
             languageOrSchema=SIMPLE_ROOT_SYSTEM_ID;
             setFeatureMap = new HashMap<String, Boolean>();
             setFeatureMap.put(XMLConstants.FEATURE_SECURE_PROCESSING,false);
-            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml", new SAXCallback());
             assertEquals("Should have been no validation errors",0,faults.size());
         } catch (SAXException ex) {
             ex.printStackTrace();
@@ -112,7 +112,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
             languageOrSchema=SIMPLE_ROOT_SYSTEM_ID;
             setPropertyMap = new HashMap<String, Object>();
             setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
-            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml");
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRoot.xml", new SAXCallback());
             assertEquals("Should have been no validation errors",0,faults.size());
         } catch (SAXNotSupportedException ex) {
             ex.printStackTrace();
@@ -132,7 +132,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
             languageOrSchema=XMLConstants.W3C_XML_SCHEMA_NS_URI;
             setFeatureMap = new HashMap<String, Boolean>();
             setFeatureMap.put(XMLConstants.FEATURE_SECURE_PROCESSING,false);
-            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml");
+            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml",new ValidatorCallback());
             assertEquals("Should have been no validation errors",0,faults.size());
         } catch (SAXException ex) {
             ex.printStackTrace();
@@ -146,7 +146,7 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
             languageOrSchema=XMLConstants.W3C_XML_SCHEMA_NS_URI;
             setPropertyMap = new HashMap<String, Object>();
             setPropertyMap.put(ValidationConstants.SUBORDINATE_PROPERTY_PHASE_PROPERTY_NAME, "phase");
-            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml");
+            Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/simpleRoot.xml",new ValidatorCallback());
             assertEquals("Should have been no validation errors",0,faults.size());
         } catch (SAXNotSupportedException ex) {
             ex.printStackTrace();
@@ -167,10 +167,8 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
         return RESOURCE_LOCATIONS;
     }
 
-    @Override
     protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
         try {
-            super.featureSetupCallback(featuresAndProperties);
             Map<String,FeaturePropertyProvider> subordinateFeaturesMap = (Map<String,FeaturePropertyProvider>) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_SUBORDINATE_FEATURES_AND_PROPERTIES);
             FeaturePropertyProvider xsdHandler = subordinateFeaturesMap.get(languageOrSchema);
             if (setFeatureMap!=null){
@@ -192,5 +190,22 @@ public class SubordinateFeaturesAndPropertyTest extends BaseXMLValidationTest {
         }
     }
     
+    private class SAXCallback implements SAXValidatorHandlerPreExecutionCallback{
+
+        @Override
+        public void preExecute(SAXParser parser, FeaturePropertyProvider validatorHandlerFAndP) {
+            featureSetupCallback(validatorHandlerFAndP);
+        }
+        
+    }
     
+    
+    private class ValidatorCallback implements ValidatorPreExecutionCallback{
+
+        @Override
+        public void preExecute(Validator validator,FeaturePropertyProvider fAndP) {
+            featureSetupCallback(fAndP);
+        }
+        
+    }
 }

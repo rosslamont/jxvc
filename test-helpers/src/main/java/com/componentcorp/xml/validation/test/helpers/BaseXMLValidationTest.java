@@ -6,6 +6,7 @@
 package com.componentcorp.xml.validation.test.helpers;
 
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import com.componentcorp.xml.validation.base.ValidatorFeaturePropertyProvider;
 import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,19 +45,28 @@ public abstract class BaseXMLValidationTest extends Assert{
     
     
     protected Collection<SAXParseException> performDOMValidatorTest(String testFile) throws SAXNotSupportedException, SAXNotRecognizedException {
-        return performDOMValidatorTest(testFile, EMPTY_FEATURES, EMPTY_PROPERTIES);
+        return performDOMValidatorTest(testFile, EMPTY_FEATURES, EMPTY_PROPERTIES,null);
     }    
     
     protected Collection<SAXParseException> performDOMValidatorTest(String testFile,Map<String,Boolean> features,Map<String,Object> properties) throws SAXNotSupportedException, SAXNotRecognizedException {
+        return performDOMValidatorTest(testFile, features, properties,null);
+        
+    }
+    
+    protected Collection<SAXParseException> performDOMValidatorTest(String testFile,DOMValidatorHandlerPreExecutionCallback callback) throws SAXNotSupportedException, SAXNotRecognizedException {
+        return performDOMValidatorTest(testFile, EMPTY_FEATURES, EMPTY_PROPERTIES,callback);
+    }
+    protected Collection<SAXParseException> performDOMValidatorTest(String testFile,Map<String,Boolean> features,Map<String,Object> properties,DOMValidatorHandlerPreExecutionCallback callback) throws SAXNotSupportedException, SAXNotRecognizedException {
         final TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
         schemaFactoryCreationCallback(schemaFactory);
-          applyFeaturesAndProperties(schemaFactory, features, properties);
+        applyFeaturesAndProperties(schemaFactory, features, properties);
         if (schemaFactory == null) {
             fail("Should have found the intrinsic factory");
         }
         try {
-            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
+            ValidatorHandlerCallback validatorHandlerCallback = new ValidatorHandlerCallback();
+            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", validatorHandlerCallback);
             Schema schema = schemaFactory.newSchema();
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
@@ -65,6 +75,9 @@ public abstract class BaseXMLValidationTest extends Assert{
             InputStream is = getClass().getResourceAsStream(testFile);
             docBuilder.setEntityResolver(contentHandler);
             docBuilder.setErrorHandler(contentHandler);
+            if (callback!=null){
+                callback.preExecute(docBuilder, validatorHandlerCallback.validatorHandlerProxy);
+            }
             docBuilder.parse(is);
         } catch (SAXException ex) {
             fail("Should not have thrown an SAXException creating schema");
@@ -77,7 +90,17 @@ public abstract class BaseXMLValidationTest extends Assert{
     }
 
     protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile) throws SAXException {
-        return this.performSAXValidatorHandlerTest(testFile,  EMPTY_FEATURES, EMPTY_PROPERTIES);
+        return this.performSAXValidatorHandlerTest(testFile,  EMPTY_FEATURES, EMPTY_PROPERTIES,null);
+    
+    }
+    
+    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,Map<String,Boolean> features, Map<String,Object> properties) throws SAXException {
+        return this.performSAXValidatorHandlerTest(testFile,  features, properties,null);
+    
+    }
+    
+    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,SAXValidatorHandlerPreExecutionCallback callback) throws SAXException {
+        return this.performSAXValidatorHandlerTest(testFile,  EMPTY_FEATURES, EMPTY_PROPERTIES,callback);
     
     }
     
@@ -95,7 +118,7 @@ public abstract class BaseXMLValidationTest extends Assert{
         }
     }
     
-    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,Map<String,Boolean> features, Map<String,Object> properties) throws SAXException {
+    protected Collection<SAXParseException> performSAXValidatorHandlerTest(String testFile,Map<String,Boolean> features, Map<String,Object> properties,SAXValidatorHandlerPreExecutionCallback callback) throws SAXException {
         TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
         schemaFactoryCreationCallback(schemaFactory);
@@ -104,7 +127,8 @@ public abstract class BaseXMLValidationTest extends Assert{
             fail("Should have found the intrinsic factory");
         }
         try {
-            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", new ValidatorHandlerCallback());
+            ValidatorHandlerCallback validatorHandlerCallback=new ValidatorHandlerCallback();
+            schemaFactory.setProperty("http://com.componentcorp.xml.validator.ValidationConstants/property/validator-handler-construction-callback", validatorHandlerCallback);
             Schema schema = schemaFactory.newSchema();
             //ValidatorHandler handler =schema.newValidatorHandler();
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
@@ -114,6 +138,9 @@ public abstract class BaseXMLValidationTest extends Assert{
 //            
 //            parser.getXMLReader().setProperty("http://xml.org/sax/properties/declaration-handler", contentHandler);
             InputStream is = getClass().getResourceAsStream(testFile);
+            if (callback!=null){
+                callback.preExecute(parser, validatorHandlerCallback.validatorHandlerProxy);
+            }
             parser.parse(is, contentHandler);
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
@@ -126,6 +153,10 @@ public abstract class BaseXMLValidationTest extends Assert{
     }
 
     protected Collection<SAXParseException> performSAXValidatorTest(String testFile) throws SAXException {
+        return performSAXValidatorTest(testFile, null);
+    }
+    
+    protected Collection<SAXParseException> performSAXValidatorTest(String testFile,ValidatorPreExecutionCallback callback) throws SAXException {
         final TestContentHandler contentHandler = new TestContentHandler(getResourceMap());
         SchemaFactory schemaFactory = SchemaFactory.newInstance(INTRINSIC_NS_URI);
         schemaFactoryCreationCallback(schemaFactory);
@@ -136,33 +167,15 @@ public abstract class BaseXMLValidationTest extends Assert{
             Schema schema = schemaFactory.newSchema();
             //ValidatorHandler handler =schema.newValidatorHandler();
             final Validator validator = schema.newValidator();
-            featureSetupCallback(new FeaturePropertyProvider() {
-                @Override
-                public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-                    return validator.getFeature(name);
-                }
-
-                @Override
-                public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-                    return validator.getProperty(name);
-                }
-
-                @Override
-                public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-                    validator.setFeature(name, value);
-                }
-
-                @Override
-                public void setProperty(String name, Object object) throws SAXNotRecognizedException, SAXNotSupportedException {
-                    validator.setProperty(name, object);
-                }
-            });
             //validator.setFeature(ValidationConstants.FEATURE_NAMESPACE_AWARE, true); //just test the feature is working even though its default
             validator.setErrorHandler(contentHandler);
             validator.setResourceResolver(contentHandler);
             InputStream is = getClass().getResourceAsStream(testFile);
             Source source = new StreamSource(is);
             Result result = new StreamResult();
+            if (callback!=null){
+                callback.preExecute(validator,new ValidatorFeaturePropertyProvider(validator));
+            }
             validator.validate(source, result);
         } catch (IOException io) {
             fail("Should not have thrown an IOException creating schema");
@@ -172,21 +185,30 @@ public abstract class BaseXMLValidationTest extends Assert{
     
     abstract protected Map<String,String> getResourceMap();
     
-    protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties){
-        
-    }
-    
     protected void schemaFactoryCreationCallback(SchemaFactory factory){
         
     }
 
     private class ValidatorHandlerCallback implements ValidatorHandlerConstructionCallback{
+        private FeaturePropertyProvider validatorHandlerProxy;
 
         @Override
         public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
-            featureSetupCallback(instrinsicValidatorHandlerProxy);
+            this.validatorHandlerProxy=instrinsicValidatorHandlerProxy;
         }
         
+    }
+    
+    protected interface ValidatorPreExecutionCallback{
+        void preExecute(Validator validator,FeaturePropertyProvider validatorHandlerFAndP);
+    }
+    
+    protected interface SAXValidatorHandlerPreExecutionCallback{
+        void preExecute(SAXParser parser, FeaturePropertyProvider validatorHandlerFAndP);
+    }
+
+    protected interface DOMValidatorHandlerPreExecutionCallback{
+        void preExecute(DocumentBuilder parser, FeaturePropertyProvider validatorHandlerFAndP);
     }
     
 }

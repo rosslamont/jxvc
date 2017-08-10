@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.validation.Validator;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -37,8 +38,6 @@ public class XMLModelGroupTest extends BaseXMLValidationTest {
         RESOURCE_LOCATIONS.put(SIMPLE_XSD_SYSTEM_ID, SIMPLE_XSD_LOCATION);
     }
     
-    private ValidatorHandlerConstructionCallback callback;
-    
     public XMLModelGroupTest() {
     }
     
@@ -54,91 +53,86 @@ public class XMLModelGroupTest extends BaseXMLValidationTest {
     
     @Test
     public void defaultGroupTest() throws SAXException{
-        callback=new ValidatorHandlerConstructionCallback() {
+        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default.xml",new ValidatorPreExecutionCallback() {
             @Override
-            public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
+            public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
                 try {
-                    instrinsicValidatorHandlerProxy.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, null);
+                    validatorHandlerFAndP.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, null);
                 } catch (SAXNotRecognizedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 } catch (SAXNotSupportedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 }
-            }
-        };
-        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default.xml");
+        }
+        });
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
     @Test
     public void default2GroupTest() throws SAXException{
-        callback=new ValidatorHandlerConstructionCallback() {
+        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default-2.xml",new ValidatorPreExecutionCallback() {
             @Override
-            public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
-                try {
-                    instrinsicValidatorHandlerProxy.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, null);
+            public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
+                    try {
+                    validatorHandlerFAndP.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, null);
                 } catch (SAXNotRecognizedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 } catch (SAXNotSupportedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 }
-            }
-        };
-        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default-2.xml");
+        }
+        });
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
     @Test
     public void default3GroupTest() throws SAXException{
-        callback=new ValidatorHandlerConstructionCallback() {
+        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default.xml", new ValidatorPreExecutionCallback() {
             @Override
-            public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
+            public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
                 try {
-                    instrinsicValidatorHandlerProxy.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "");
+                    validatorHandlerFAndP.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "");
                 } catch (SAXNotRecognizedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 } catch (SAXNotSupportedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 }
             }
-        };
-        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default.xml");
+        });
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
     @Test
     public void default4GroupTest() throws SAXException{
-        callback=new ValidatorHandlerConstructionCallback() {
+        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default-2.xml", new ValidatorPreExecutionCallback() {
             @Override
-            public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
+            public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
                 try {
-                    instrinsicValidatorHandlerProxy.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "");
+                    validatorHandlerFAndP.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "");
                 } catch (SAXNotRecognizedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 } catch (SAXNotSupportedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 }
             }
-        };
-        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-default-2.xml");
+        });
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
     @Test
     public void alternateGroupTest() throws SAXException{
-        callback=new ValidatorHandlerConstructionCallback() {
+        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-alternate.xml", new ValidatorPreExecutionCallback() {
             @Override
-            public void onConstruction(FeaturePropertyProvider instrinsicValidatorHandlerProxy) {
+            public void preExecute(Validator validator, FeaturePropertyProvider validatorHandlerFAndP) {
                 try {
-                    instrinsicValidatorHandlerProxy.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "active");
+                    validatorHandlerFAndP.setProperty(ValidationConstants.PROPERTY_XML_MODEL_GROUPS, "active");
                 } catch (SAXNotRecognizedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 } catch (SAXNotSupportedException ex) {
                     fail("Should have been able to set ValidationConstants.PROPERTY_XML_MODEL_GROUPS");
                 }
             }
-        };
-        Collection<SAXParseException> faults=performSAXValidatorTest("/xml-model/group-test-alternate.xml");
+        });
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
@@ -148,14 +142,6 @@ public class XMLModelGroupTest extends BaseXMLValidationTest {
         return RESOURCE_LOCATIONS;
     }
 
-    @Override
-    protected void featureSetupCallback(FeaturePropertyProvider featuresAndProperties) {
-        super.featureSetupCallback(featuresAndProperties); 
-        if (callback!=null){
-            callback.onConstruction(featuresAndProperties);
-        }
-    }
-    
     
     
 }
