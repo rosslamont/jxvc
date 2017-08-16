@@ -93,5 +93,5 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License with some variations - see the [LICENSE](LICENSE) file for details
+This project is licensed under the Apache 2.0 License with some variations - see the [LICENSE](LICENSE) file for details
 
