@@ -18,9 +18,7 @@ In addition, a small library of functionality is provided to support other valid
 
 ### Installing
 
-All artifacts are available in the maven central repository.  There are a number of artifacts provided to provide flexibility and to permit developers to substitue their own validator implementations if desired.
-
-All artifacts are available at maven central.  Note that the various validator libraries do not have dependencies upon each other.  See the [Usage examples](https://github.com/rosslamont/jxvc/wiki/Usage-examples) for a detailed explanation.
+All artifacts are available in the maven central repository.  Each validator is independent of any other validator, providing a developer with flexibility and the ability to substitue there own implementations of particular validation languages if desired.  See the [Usage examples](https://github.com/rosslamont/jxvc/wiki/Usage-examples) for a more information.
 
 The artifacts provided are as follows:
 
