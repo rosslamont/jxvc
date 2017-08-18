@@ -17,6 +17,8 @@
 package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
+import javax.xml.validation.TypeInfoProvider;
+import javax.xml.validation.ValidatorHandler;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -111,6 +113,14 @@ public interface ValidationConstants extends com.componentcorp.xml.validation.ba
      */
     public static final String PROPERTY_XML_MODEL_GROUPS="http://com.componentcorp.xml.validator.ValidationConstants/property/xml-model-groups";
     
+    
+    /**
+     * This feature enables the experimental wrapping {@link TypeInfoProvider}.  By default, calls to {@link IntrinsicValidatorHandler#getTypeInfoProvider() } return {@code null}.
+     * If enabled, calls to this method will return an experimental {@link TypeInfoProvider} which wraps any subordinate {@link ValidatorHandler}.  If there are many subordinates, 
+     * they are wrapped in an ordered chain, (according to the order laid out in {@link #PROPERTY_PROCESSING_ORDER}).  The experimental TypeInfoProvider will return values 
+     * according to the first wrapped TypeInfoProvider that provides an answer.
+     */
+    public static final String FEATURE_EXPERIMENTAL_WRAPPING_TYPEINFO_PROVIDER="http://com.componentcorp.xml.validator.ValidationConstants/feature/experimental-typeinfo-provider";
     
     /**
      * If no validator is discovered from the document before the first element, then load the validator from the validation factory identified by this 

@@ -21,12 +21,10 @@ import com.componentcorp.xml.validation.base.ProcessingInstructionParser;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +40,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.TypeInfoProvider;
 import javax.xml.validation.ValidatorHandler;
+import org.w3c.dom.TypeInfo;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.Attributes;
@@ -76,6 +75,7 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
     private final FeaturePropertyProviderInternal featuresAndProperties;
     private ContentHandler firstContentHandler=null;
     private DeclHandler firstDeclHandler=null;
+    private TypeInfoProvider firstTypeInfoProvider=null;
     private static final String  XML_MODEL="xml-model";
     
     
@@ -159,9 +159,12 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
 
     @Override
     public TypeInfoProvider getTypeInfoProvider() {
-        //TODO: Somehow, we need to merge all type info providers from subordinate validators.
-        return null;
-        //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try{
+            return getFeature(ValidationConstants.FEATURE_EXPERIMENTAL_WRAPPING_TYPEINFO_PROVIDER)?new WrappingTypeInfoProvider():null;
+        }
+        catch(SAXException ignore){
+            throw new RuntimeException(ignore);
+        }
     }
 
     public void setDocumentLocator(final Locator locator) {
@@ -681,7 +684,7 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
             }
             
         }
-        chainValidatorsAndDeclHandlers();
+        chainValidatorsAndTypeInforProvidersAndDeclHandlers();
         performDeferredActions();
         if (lateThrow !=null){
             throw lateThrow;
@@ -689,9 +692,10 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
     }
 
     
-    private void chainValidatorsAndDeclHandlers() throws SAXNotRecognizedException, SAXNotSupportedException {
+    private void chainValidatorsAndTypeInforProvidersAndDeclHandlers() throws SAXNotRecognizedException, SAXNotSupportedException {
         firstContentHandler = contentHandler;
         firstDeclHandler = (DeclHandler) featuresAndProperties.getProperty(ValidationConstants.PROPERTY_DECLARATION_HANDLER);
+        firstTypeInfoProvider=null;
         ListIterator<Sax2DefaultHandlerWrapper> wrapperIterator = currentOrderedValidators.listIterator(currentOrderedValidators.size());
         while(wrapperIterator.hasPrevious()){
             Sax2DefaultHandlerWrapper wrapper=wrapperIterator.previous();
@@ -705,6 +709,10 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
                 else{
                     firstDeclHandler = new TeeChainableDeclHandler(wrapper.asDeclHandler,firstDeclHandler);
                 }
+            }
+            TypeInfoProvider wrappable=wrapper.asValidatorHandler.getTypeInfoProvider();
+            if (wrappable!=null){
+                firstTypeInfoProvider=new ChainableTypeInfoProvider(firstTypeInfoProvider,wrappable);
             }
         }
     }
@@ -1284,9 +1292,93 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
                 errorHandler.warning(exception);
             }
         }
-
+        
+    }
+    
+    private class WrappingTypeInfoProvider extends TypeInfoProvider{
 
         
+        @Override
+        public TypeInfo getElementTypeInfo() {
+            return firstTypeInfoProvider==null?null:firstTypeInfoProvider.getElementTypeInfo();
+        }
+
+        @Override
+        public TypeInfo getAttributeTypeInfo(int index) {
+            return firstTypeInfoProvider==null?null:firstTypeInfoProvider.getAttributeTypeInfo(index);
+        }
+
+        @Override
+        public boolean isIdAttribute(int index) {
+            return firstTypeInfoProvider==null?false:firstTypeInfoProvider.isIdAttribute(index);
+        }
+
+        @Override
+        public boolean isSpecified(int index) {
+            return firstTypeInfoProvider==null?false:firstTypeInfoProvider.isSpecified(index);
+        }
+        
+    }
+    
+    private class ChainableTypeInfoProvider extends TypeInfoProvider{
+
+        private final TypeInfoProvider nextTypeInfoProvider;
+        private final TypeInfoProvider wrappedTypeInfoProvider;
+
+        public ChainableTypeInfoProvider(TypeInfoProvider nextTypeInfoProvider, TypeInfoProvider wrappedTypeInfoProvider) {
+            this.nextTypeInfoProvider = nextTypeInfoProvider;
+            this.wrappedTypeInfoProvider = wrappedTypeInfoProvider;
+        }
+        
+        
+        
+        @Override
+        public TypeInfo getElementTypeInfo() {
+            TypeInfo ret=null;
+            if (wrappedTypeInfoProvider!=null){
+                ret = wrappedTypeInfoProvider.getElementTypeInfo();
+            }
+            if (ret==null &&nextTypeInfoProvider!=null){
+                ret = nextTypeInfoProvider.getElementTypeInfo();
+            }
+            return ret;
+        }
+
+        @Override
+        public TypeInfo getAttributeTypeInfo(int index) {
+            TypeInfo ret=null;
+            if (wrappedTypeInfoProvider!=null){
+                ret = wrappedTypeInfoProvider.getAttributeTypeInfo(index);
+            }
+            if (ret==null &&nextTypeInfoProvider!=null){
+                ret = nextTypeInfoProvider.getAttributeTypeInfo(index);
+            }
+            return ret;
+        }
+
+        @Override
+        public boolean isIdAttribute(int index) {
+            boolean ret=false;
+            if (wrappedTypeInfoProvider!=null){
+                ret = wrappedTypeInfoProvider.isIdAttribute(index);
+            }
+            if (!ret &&nextTypeInfoProvider!=null){
+                ret = nextTypeInfoProvider.isIdAttribute(index);
+            }
+            return ret;
+        }
+
+        @Override
+        public boolean isSpecified(int index) {
+            boolean ret=true;
+            if (wrappedTypeInfoProvider!=null){
+                ret = wrappedTypeInfoProvider.isSpecified(index);
+            }
+            if (ret &&nextTypeInfoProvider!=null){
+                ret = nextTypeInfoProvider.isSpecified(index);
+            }
+            return ret;
+        }
         
     }
 }

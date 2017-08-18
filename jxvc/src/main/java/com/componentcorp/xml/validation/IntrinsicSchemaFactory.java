@@ -16,7 +16,6 @@
 
 package com.componentcorp.xml.validation;
 
-import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
 import com.componentcorp.xml.validation.base.LifecycleSchemaFactory;
 import java.util.Collections;
@@ -73,6 +72,7 @@ public class IntrinsicSchemaFactory extends LifecycleSchemaFactory implements Fe
         try{fAndP.setProperty(ValidationConstants.PROPERTY_MIME_TYPE_TO_SCHEMATYPENS_MAP,defaultMimeTypeToSchemaTypeNSMap);}catch(SAXException ignore){}
         fAndP.addAllowedFeature(ValidationConstants.FEATURE_TREAT_INVALID_SUBORDINATE_FEATURES_AS_ERRORS, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
         featuresAndProperties=fAndP;
+        fAndP.addAllowedFeature(ValidationConstants.FEATURE_EXPERIMENTAL_WRAPPING_TYPEINFO_PROVIDER, FeaturePropertyProviderInternal.ReadWriteable.READ_WRITE);
     }
     
     
