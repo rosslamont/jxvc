@@ -1074,17 +1074,26 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
             if (errorHandler!=null){
                 errorHandler.warning(exception);
             }
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.warning(exception);
+            }
         }
 
         public void error(SAXParseException exception) throws SAXException {
             if (errorHandler!=null){
                 errorHandler.error(exception);
             }
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.error(exception);
+            }
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {
             if (errorHandler!=null){
                 errorHandler.fatalError(exception);
+            }
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.fatalError(exception);
             }
         }
         

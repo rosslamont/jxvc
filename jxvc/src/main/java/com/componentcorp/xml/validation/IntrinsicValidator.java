@@ -52,7 +52,6 @@ import org.xml.sax.ext.EntityResolver2;
 public class IntrinsicValidator extends Validator implements FeaturePropertyProvider{
     
     
-    private SAXParseException firstFatalError=null;
     private ErrorHandler errorHandler;
     private LSResourceResolver resourceResolver;
     private final FeaturePropertyProviderInternal featuresAndProperties;
@@ -72,13 +71,12 @@ public class IntrinsicValidator extends Validator implements FeaturePropertyProv
 
     @Override
     public void reset() {
-        firstFatalError=null;
+        validatorHandler.reset();
     }
 
     @Override
     public void validate(Source source, Result result) throws SAXException, IOException {
         try {
-            firstFatalError=null;
             if (source ==null){
                 throw new NullPointerException("Null source is not permitted");
             }
@@ -120,9 +118,6 @@ public class IntrinsicValidator extends Validator implements FeaturePropertyProv
             xmlReader.setEntityResolver(new LSResourceResolverWrapper(resourceResolver));
             xmlReader.setErrorHandler(new MonitoringErrorHandler(errorHandler));
             xmlReader.parse(inputSource);
-            if (firstFatalError!=null){
-                throw firstFatalError;
-            }
         } catch (ParserConfigurationException ex) {
             throw new SAXException(ex);
         }
@@ -235,23 +230,26 @@ public class IntrinsicValidator extends Validator implements FeaturePropertyProv
             if (wrappedHandler!=null){
                 wrappedHandler.warning(exception);
             }
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.warning(exception);
+            }
         }
 
         public void error(SAXParseException exception) throws SAXException {
             if (wrappedHandler!=null){
                 wrappedHandler.error(exception);
             }
-            else if (firstFatalError==null){
-                firstFatalError = exception;
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.error(exception);
             }
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {
-            if (firstFatalError==null){
-                firstFatalError = exception;
-            }
             if (wrappedHandler!=null){
                 wrappedHandler.fatalError(exception);
+            }
+            else {
+                DraconianErrorHandler.DEFAULT_ERROR_HANDLER.fatalError(exception);
             }
         }
         
