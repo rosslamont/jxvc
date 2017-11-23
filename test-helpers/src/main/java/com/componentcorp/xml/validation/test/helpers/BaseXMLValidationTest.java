@@ -26,6 +26,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.junit.Assert;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -138,10 +139,13 @@ public abstract class BaseXMLValidationTest extends Assert{
 //            
 //            parser.getXMLReader().setProperty("http://xml.org/sax/properties/declaration-handler", contentHandler);
             InputStream is = getClass().getResourceAsStream(testFile);
+            InputSource source = new InputSource(is);
+            source.setSystemId(getClass().getResource(testFile).toString());
+            
             if (callback!=null){
                 callback.preExecute(parser, validatorHandlerCallback.validatorHandlerProxy);
             }
-            parser.parse(is, contentHandler);
+            parser.parse(source, contentHandler);
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
             fail("Should not have thrown an ParserConfigurationException creating schema");
