@@ -498,16 +498,13 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
                 if (charset!=null){
                     input.setEncoding(charset);
                 }
-                Source source=null;
-                InputStream stream= input.getByteStream();
-                if (stream!=null){
-                    source = new StreamSource(stream);
-                }
-                else{
-                    Reader reader=input.getCharacterStream();
-                    if (reader!=null){
-                        source = new StreamSource(reader);
+                Source source=convertLSInputToSource(input);
+                if (source==null){
+                    input = getResourceResolver().resolveResource(type, schematypens, href, href, input.getBaseURI());
+                    if (charset!=null){
+                        input.setEncoding(charset);
                     }
+                    source=convertLSInputToSource(input);
                 }
                 if (source!=null&& factory!=null){
                     schema = factory.newSchema(source);
@@ -523,6 +520,21 @@ public class IntrinsicValidatorHandler extends ValidatorHandler implements  Decl
             throw new SAXParseException("Could not load validation source", locator);
         }
         addNewValidator(wrapper,schematypens,phase);
+    }
+
+    private Source convertLSInputToSource(LSInput input) {
+        Source source=null;
+        Reader reader=input.getCharacterStream();
+        if (reader!=null){
+            source = new StreamSource(reader);
+        }
+        else{
+            InputStream stream= input.getByteStream();
+            if (stream!=null){
+                source = new StreamSource(stream);
+            }
+        }
+        return source;
     }
 
     private void performDeferredActions() throws SAXException {

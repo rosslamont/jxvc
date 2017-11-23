@@ -62,6 +62,18 @@ public class XMLSchemaValidationTest extends BaseXMLValidationTest{
     
     
     @Test
+    public void simpleSAXRootRelativeXSDValidatorHandler(){
+        try{
+            Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRootRelative.xml");
+            assertEquals("Should have been no validation errors",0,faults.size());
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+            fail("Should not have thrown an exception");
+        } 
+    }
+    
+    
+    @Test
     public void simpleSAXRootFailXSDValidatorHandler() throws SAXParseException{
         try{
         Collection<SAXParseException> faults=performSAXValidatorHandlerTest("/xml-model/simpleRootFail.xml");
