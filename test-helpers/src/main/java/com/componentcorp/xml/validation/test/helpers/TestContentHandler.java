@@ -18,6 +18,8 @@ package com.componentcorp.xml.validation.test.helpers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -49,13 +51,31 @@ public class TestContentHandler extends DefaultHandler2 implements LSResourceRes
     }
 
     @Override
-    public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+    public InputSource resolveEntity(String name, String publicId, String baseuri, String systemId) throws SAXException, IOException {
         InputStream input =null;
         String resource=entityResolverMap.get(systemId);
         if (resource!=null){
             input=this.getClass().getResourceAsStream(resource);
         }
+        else if (baseuri!=null){
+            try {
+                URI possibleRelativeURI = new URI(systemId);
+                if (!possibleRelativeURI.isAbsolute()){
+                    URI baseURI = new URI(baseuri);
+                    if (baseURI.isAbsolute() && "file".equals(baseURI.getScheme())){
+                        URI finalURI= baseURI.resolve(possibleRelativeURI);
+                        if (finalURI.isAbsolute()){
+                            input=finalURI.toURL().openStream();
+                        }
+                    }
+                }
+            } catch (URISyntaxException ex) {
+                
+            }
+            
+        }
         InputSource source = new InputSource(input);
+        
         source.setPublicId(publicId);
         source.setSystemId(systemId);
         return source;
