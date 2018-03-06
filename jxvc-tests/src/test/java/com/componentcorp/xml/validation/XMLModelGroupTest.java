@@ -6,13 +6,10 @@
 package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.base.FeaturePropertyProvider;
-import com.componentcorp.xml.validation.base.ValidatorHandlerConstructionCallback;
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.validation.Validator;
 import org.junit.Before;
 import org.junit.Test;

@@ -6,27 +6,15 @@
 package com.componentcorp.xml.validation;
 
 import com.componentcorp.xml.validation.test.helpers.BaseXMLValidationTest;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.stream.StreamSource;
-import junit.framework.TestCase;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 
 /**
  *
@@ -55,8 +43,14 @@ public class SaxParserTest extends BaseXMLValidationTest {
     // public void hello() {}
     
     @Test
-    public void simpleSAXRootXSDValidator() throws SAXException{
+    public void simpleSAXRootRNCSchemaTypeValidator() throws SAXException{
         Collection<SAXParseException> faults=performSAXValidatorTest("/relaxNG/simple_xml-model.xml");
+        assertEquals("Should have been no validation errors",0,faults.size());
+    }
+    
+    @Test
+    public void simpleSAXRootRNCTypeValidator() throws SAXException{
+        Collection<SAXParseException> faults=performSAXValidatorTest("/relaxNG/simple_xml-model-2.xml");
         assertEquals("Should have been no validation errors",0,faults.size());
     }
     
